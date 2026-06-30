@@ -7,13 +7,19 @@ Copilot-generated functions **must** follow these rules before being committed.
 
 ## 1. File & Folder Layout
 
-- One function per file.
+- **One exported function per file.** This is a hard rule — no exceptions.
+  - Never group multiple functions into a `*.utils.ts`, `*.helpers.ts`, or any other
+    bundled file. Each function gets its own file, even if it is trivial.
 - Filename: `kebab-case`, matching the exported function name.
   - `randomNumber` → `random-number.ts`
   - `capitalize` → `capitalize.ts`
 - Domain folders live under `src/` (`array/`, `number/`, `string/`, …).
 - Every domain folder has an `index.ts` that re-exports with `export * from`.
 - The root `src/index.ts` re-exports all domain barrels.
+- **Shared private helpers** (e.g. `_parseDate`) belong in a `_helpers.ts` file inside
+  the domain folder. Export them from `_helpers.ts` so sibling files can import them,
+  but **do not** re-export `_helpers.ts` from the domain `index.ts` or the root barrel.
+  Name every helper with a leading underscore (`_helperName`) to signal it is internal.
 
 ---
 
