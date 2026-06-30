@@ -23,13 +23,17 @@
   },
   "scripts": {
     "build": "tsdown src/index.ts --format esm,cjs --dts",
-    "dev": "tsdown src/index.ts --watch --format esm,cjs --dts"
+    "dev": "tsdown src/index.ts --watch --format esm,cjs --dts",
+    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^26.0.1",
+    "jest": "^30.4.2",
+    "ts-jest": "^29.4.11",
     "tsdown": "^0.22.3",
     "typescript": "^6.0.3"
   }
