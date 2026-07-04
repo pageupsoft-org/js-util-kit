@@ -1,6 +1,7 @@
 import { describe, it, expect } from '@jest/globals';
 import {
     groupBy,
+    sortArray,
     sortBy,
     distinct,
     distinctBy,
@@ -91,6 +92,86 @@ describe('sortBy', () => {
 
     it('returns [] for undefined', () => {
         expect(sortBy<number>(undefined, n => n)).toEqual([]);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// sortArray
+// ---------------------------------------------------------------------------
+
+describe('sortArray', () => {
+    it('sorts by multiple rules with tie-breakers', () => {
+        const users = [
+            { lastName: 'Stone', age: 30 },
+            { lastName: 'Stone', age: 22 },
+            { lastName: 'Adams', age: 40 },
+        ];
+
+        const result = [...users].sort(sortArray([
+            { property: 'lastName', direction: 'asc' },
+            { property: 'age', direction: 'desc' },
+        ]));
+
+        expect(result).toEqual([
+            { lastName: 'Adams', age: 40 },
+            { lastName: 'Stone', age: 30 },
+            { lastName: 'Stone', age: 22 },
+        ]);
+    });
+
+    it('sorts using a selector function', () => {
+        const products = [
+            { name: 'Mouse', price: 19.99 },
+            { name: 'Keyboard', price: 49.99 },
+            { name: 'Cable', price: 9.99 },
+        ];
+
+        const result = [...products].sort(sortArray([
+            { property: item => item.price, direction: 'asc' },
+        ]));
+
+        expect(result.map(p => p.name)).toEqual(['Cable', 'Mouse', 'Keyboard']);
+    });
+
+    it('sorts dates by timestamp', () => {
+        const rows = [
+            { at: new Date('2024-06-10') },
+            { at: new Date('2022-01-01') },
+            { at: new Date('2023-03-15') },
+        ];
+
+        const result = [...rows].sort(sortArray([{ property: 'at', direction: 'asc' }]));
+        expect(result.map(r => r.at.toISOString().slice(0, 10))).toEqual([
+            '2022-01-01',
+            '2023-03-15',
+            '2024-06-10',
+        ]);
+    });
+
+    it('puts nullish values last by default', () => {
+        const rows = [
+            { score: null as number | null | undefined },
+            { score: 10 },
+            { score: undefined },
+            { score: 5 },
+        ];
+
+        const result = [...rows].sort(sortArray([{ property: 'score', direction: 'asc' }]));
+        expect(result.map(r => r.score)).toEqual([5, 10, null, undefined]);
+    });
+
+    it('supports nulls first option', () => {
+        const rows = [
+            { score: null as number | null | undefined },
+            { score: 10 },
+            { score: undefined },
+            { score: 5 },
+        ];
+
+        const result = [...rows].sort(
+            sortArray([{ property: 'score', direction: 'asc' }], { nulls: 'first' })
+        );
+        expect(result.map(r => r.score)).toEqual([null, undefined, 5, 10]);
     });
 });
 
