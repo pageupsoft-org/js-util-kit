@@ -1,4 +1,5 @@
 export * from './array/index.js';
+export * from './browser/index.js';
 export * from './date/index.js';
 export * from './number/index.js';
 export * from './object/index.js';
