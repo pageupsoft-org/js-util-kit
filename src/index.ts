@@ -3,6 +3,7 @@ export * from './browser/index.js';
 export * from './date/index.js';
 export * from './number/index.js';
 export * from './object/index.js';
+export * from './storage/index.js';
 export * from './string/index.js';
 export * from './url/index.js';
 export * from './validation/index.js';
