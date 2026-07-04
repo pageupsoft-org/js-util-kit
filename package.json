@@ -1,6 +1,6 @@
 {
   "name": "@rsiddha/js-utils",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "description": "",
   "type": "module",
   "main": "./dist/index.cjs",
