@@ -3,12 +3,26 @@ import { decodeJwt, isTokenExpired } from './index.js';
 
 function createJwt(payload: Record<string, unknown>): string {
     const header = { alg: 'HS256', typ: 'JWT' };
-    const encodeBase64Url = (value: string): string =>
-        Buffer.from(value, 'utf8')
-            .toString('base64')
-            .replace(/\+/g, '-')
-            .replace(/\//g, '_')
-            .replace(/=+$/g, '');
+    const encodeBase64Url = (value: string): string => {
+        const bufferLike = (globalThis as { Buffer?: { from: (input: string, encoding: string) => { toString: (encoding: string) => string } } }).Buffer;
+        if (bufferLike != null) {
+            return bufferLike
+                .from(value, 'utf8')
+                .toString('base64')
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=+$/g, '');
+        }
+
+        if (typeof btoa === 'function') {
+            return btoa(value)
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=+$/g, '');
+        }
+
+        throw new Error('No base64 encoder available in this environment.');
+    };
 
     return `${encodeBase64Url(JSON.stringify(header))}.${encodeBase64Url(JSON.stringify(payload))}.signature`;
 }

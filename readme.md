@@ -99,6 +99,463 @@ type Session = { token: string; role: string };
 const session = getItem<Session>('session');
 ```
 
+## Error and Logger Utilities
+
+The library now includes cross-platform error handling and structured logging primitives that work in frontend and backend runtimes.
+
+Detailed guide: [docs/LOGGER_ERROR_USAGE_GUIDE.md](docs/LOGGER_ERROR_USAGE_GUIDE.md)
+
+### What You Get
+
+- Separate `error` and `logger` modules with a composable API.
+- Default no-op logger sink (safe by default, no side effects).
+- Error normalization from `unknown` values into a stable envelope.
+- Custom error classes for application flows.
+- Built-in configurable redaction for sensitive payload fields.
+
+### Frontend Example (React/Angular/Vanilla)
+
+```ts
+import {
+	createLogger,
+	logUnknownError,
+	ValidationError,
+} from '@rsiddha/js-utils';
+
+const logger = createLogger({
+	minLevel: 'info',
+	redaction: {
+		keys: ['password', 'token'],
+	},
+	baseContext: {
+		app: 'web-client',
+	},
+});
+
+function submitLogin(email: string, password: string): void {
+	if (!email.includes('@')) {
+		throw new ValidationError('Invalid email address.', {
+			context: { email },
+		});
+	}
+
+	try {
+		// submit request
+		logger.info('Login request submitted', {
+			context: { feature: 'auth' },
+			data: { email, password },
+		});
+	} catch (error) {
+		logUnknownError(logger, error, 'Login failed', {
+			feature: 'auth',
+		});
+	}
+}
+```
+
+### Backend Example (Node.js)
+
+```ts
+import {
+	AppError,
+	createLogger,
+	normalizeError,
+} from '@rsiddha/js-utils';
+
+const logger = createLogger({
+	minLevel: 'debug',
+	baseContext: {
+		service: 'billing-api',
+	},
+	redaction: {
+		keys: ['authorization', 'apiKey', 'secret'],
+		paths: ['request.headers.authorization'],
+	},
+});
+
+function chargeCustomer(requestId: string): void {
+	try {
+		throw new AppError('Payment gateway timeout', {
+			code: 'PAYMENT_TIMEOUT',
+			context: {
+				requestId,
+				authorization: 'Bearer value',
+			},
+		});
+	} catch (error) {
+		const normalized = normalizeError(error, {
+			context: { requestId },
+		});
+
+		logger.error('Charge failed', {
+			error: normalized,
+			context: { requestId },
+		});
+	}
+}
+```
+
+### API Notes
+
+- `createLogger()` uses a no-op sink unless you provide a custom sink.
+- `normalizeError()` safely handles `Error`, strings, plain objects, and unknown values.
+- `redactLogPayload()` supports key-based, path-based, and callback-based redaction.
+- Turnkey vendor SDK wrappers are deferred, but provider toolkit helpers are available.
+
+### Console Sink Adapter
+
+```ts
+import {
+	createConsoleLogSink,
+	createLogger,
+} from '@rsiddha/js-utils';
+
+const logger = createLogger({
+	sink: createConsoleLogSink({
+		pretty: true,
+	}),
+	minLevel: 'debug',
+});
+
+logger.info('Server started', {
+	context: {
+		port: 3000,
+		env: 'dev',
+	},
+});
+```
+
+`createConsoleLogSink` behavior:
+
+- Maps `fatal/error -> console.error`, `warn -> console.warn`, `info -> console.info`, `debug -> console.debug`, `trace -> console.trace`.
+- Falls back to `console.log` when preferred methods are unavailable.
+- Never throws into application flow.
+
+### HTTP Sink Adapter
+
+```ts
+import {
+	createHttpLogSink,
+	createRetryCircuitPolicyPreset,
+	createTransportResilienceProfilePreset,
+	createLogger,
+} from '@rsiddha/js-utils';
+
+const resiliencePreset = createRetryCircuitPolicyPreset('balanced');
+const profilePreset = createTransportResilienceProfilePreset('availability-first');
+
+const logger = createLogger({
+	sink: createHttpLogSink({
+		url: 'https://logs.example.com/events',
+		...resiliencePreset,
+		...profilePreset,
+		method: 'POST',
+		contentType: 'application/json',
+		timeoutMs: 4000,
+		maxRetries: 2,
+		retryDelayMs: 100,
+		retryBackoffMultiplier: 2,
+		retryJitterRatio: 0.2,
+		batchSize: 20,
+		flushIntervalMs: 1000,
+		maxQueueSize: 2000,
+		overflowStrategy: 'drop-oldest',
+		persistence: {
+			loadQueue: async () => [],
+			saveQueue: async (_events) => {
+				// Persist queue snapshot to your storage layer.
+			},
+			saveDebounceMs: 100,
+		},
+		// Optional hook: customize batch serialization (e.g. NDJSON).
+		serializeBatch: (events, context) =>
+			JSON.stringify({
+				correlationId: context.correlationId,
+				trace: context.traceMetadata,
+				events,
+			}),
+		traceMetadataFactory: (events, context) => ({
+			strategy: 'redaction-v2',
+			batchSize: events.length,
+			flushSequence: context.flushSequence,
+		}),
+		includeTraceMetadataInPayload: true,
+		traceMetadataPayloadKey: 'trace',
+		// Optional hook: compress serialized payload before transport.
+		compressPayload: (payload) => payload,
+		compressionEncoding: 'identity',
+		metrics: {
+			onQueueDepthChange: (depth) => {
+				console.log('queue depth', depth);
+			},
+			onFlushComplete: (metrics) => {
+				console.log('flush metrics', metrics.durationMs, metrics.eventsSent);
+			},
+			onDropCountChange: (totalDropped) => {
+				console.log('dropped events', totalDropped);
+			},
+		},
+		onBatchOutcome: (outcome) => {
+			console.log('batch outcome', outcome.success, outcome.statusCode);
+		},
+		onFlushOutcome: (outcome) => {
+			console.log('flush outcome', outcome.success, outcome.eventsSent, outcome.failedEvents);
+		},
+		onRequestAudit: (audit) => {
+			console.log('request audit', audit.attempt, audit.statusCode, audit.durationMs);
+		},
+		requestSamplingPolicy: 'probabilistic',
+		requestSampleRate: 0.5,
+		shouldSampleRequest: (context) => context.batch[0]?.level !== 'debug',
+		onRequestSamplingDecision: (decision) => {
+			console.log('sampling decision', decision.policy, decision.sampled);
+		},
+		resolveFlushFailurePolicy: (context) => {
+			if (context.statusCode === 429) {
+				return 'requeue-and-stop';
+			}
+
+			return 'continue';
+		},
+		resolveRetryTuning: (context) => {
+			if (context.statusCode === 429) {
+				return { shouldRetry: true, delayMs: 250 };
+			}
+
+			return { shouldRetry: true, delayMs: context.baseDelayMs };
+		},
+		onRetryTuningDecision: (decision) => {
+			console.log('retry tuning', decision.failedAttempt, decision.delayMs, decision.shouldRetry);
+		},
+		circuitBreaker: {
+			enabled: true,
+			failureThreshold: 5,
+			cooldownMs: 30_000,
+			halfOpenMaxRequests: 1,
+			resolveTuning: (context) => {
+				if (context.statusCode === 503) {
+					return {
+						failureThreshold: 2,
+						cooldownMs: 5_000,
+					};
+				}
+
+				return undefined;
+			},
+			onStateChange: (change) => {
+				console.log('circuit state', change.previousState, change.state, change.reason);
+			},
+			onTuningDecision: (outcome) => {
+				console.log('circuit tuning', outcome.appliedFailureThreshold, outcome.appliedCooldownMs);
+			},
+		},
+		retryBudget: {
+			enabled: true,
+			maxRetriesPerBatch: 2,
+			maxRetriesPerFlush: 10,
+			onExhausted: (context) => {
+				console.log('retry budget exhausted', context.reason, context.correlationId);
+			},
+		},
+		chaos: {
+			enabled: false,
+			probability: 0.1,
+			forcedStatusCode: 503,
+			forcedErrorMessage: 'synthetic chaos failure',
+			decide: (context) => {
+				if (context.attempt === 1) {
+					return { statusCode: 500 };
+				}
+
+				return undefined;
+			},
+			onDecision: (outcome) => {
+				console.log('chaos decision', outcome.injected, outcome.attempt, outcome.statusCode);
+			},
+		},
+		deadLetter: {
+			emit: async (entry) => {
+				console.log('dead letter', entry.reason, entry.event.message);
+			},
+			onEmitError: (error, entry) => {
+				console.warn('dead-letter emit failed', error, entry.reason);
+			},
+		},
+		correlationIdFactory: () => crypto.randomUUID(),
+		correlationHeaderName: 'x-log-correlation-id',
+		includeCorrelationIdInPayload: true,
+		correlationPayloadKey: 'traceId',
+		headers: {
+			'x-service': 'billing-api',
+		},
+	}),
+	minLevel: 'info',
+});
+
+logger.error('Checkout failed', {
+	context: { requestId: 'req-11' },
+	data: { cartId: 'c-1001' },
+});
+
+// Optional lifecycle controls for graceful shutdown paths.
+const httpSink = createHttpLogSink({ url: 'https://logs.example.com/events' });
+await httpSink.flush();
+await httpSink.shutdown();
+const snapshot = httpSink.getMetricsSnapshot();
+```
+
+`createHttpLogSink` behavior:
+
+- Sends JSON payloads using a fetch-compatible transport.
+- Uses `content-type: application/json` by default.
+- Supports timeout, retries, and jittered exponential backoff.
+- Supports queue-based batching and bounded backpressure controls.
+- Supports queue persistence hooks (`loadQueue`, `saveQueue`) for restart resilience.
+- Exposes `flush()` and `shutdown()` for graceful application termination.
+- Supports custom batch serializers and payload compression hooks.
+- Supports pluggable trace metadata for serialization context and optional payload embedding.
+- Exposes runtime metrics hooks and a `getMetricsSnapshot()` API for health monitoring.
+- Supports per-batch and per-flush outcome callbacks for observability pipelines.
+- Supports per-request audit callbacks with attempt/status/latency/payload-size metadata.
+- Supports flush-level delivery policies (`continue`, `stop-flush`, `requeue-and-stop`) on failed batches.
+- Supports request sampling policies (`always`, `never`, `probabilistic`, `custom`) to control transport volume.
+- Supports optional dead-letter hooks for dropped/undeliverable events.
+- Supports adaptive retry tuning hooks to override retry delay and continue/stop retry flow per failed attempt.
+- Supports circuit-breaker transport gating (`closed`, `open`, `half-open`) with cooldown and transition callbacks.
+- Supports dynamic circuit tuning hooks to adapt threshold/cooldown/probe limits based on runtime failures.
+- Supports retry budget enforcement hooks for per-batch and per-flush retry caps.
+- Supports chaos-testing hooks for synthetic status/error/delay injection in transport attempts.
+- Supports named retry/circuit policy presets (`conservative`, `balanced`, `aggressive`).
+- Supports transport resilience profile presets (`availability-first`, `cost-efficient`, `test-hardened`).
+- Supports per-batch correlation IDs for transport tracing (header + optional payload tagging).
+- Silently ignores transport failures (does not throw from `emit`).
+
+### Provider Adapter Toolkit
+
+```ts
+import {
+	createLogger,
+	createProviderLogSink,
+	toDatadogLogEvent,
+} from '@rsiddha/js-utils';
+
+const datadogSink = createProviderLogSink({
+	mapEvent: (event) =>
+		toDatadogLogEvent(event, {
+			service: 'billing-api',
+			env: 'prod',
+			source: 'node',
+		}),
+	emitPayload: async (payload) => {
+		// Replace with actual Datadog SDK/API call.
+		await Promise.resolve(payload);
+	},
+});
+
+const logger = createLogger({
+	sink: datadogSink,
+	minLevel: 'info',
+});
+
+logger.error('Payment failed', {
+	context: { requestId: 'req-20' },
+});
+```
+
+Toolkit helpers available:
+
+- `createProviderLogSink` for safe map-and-emit adapters.
+- `createDatadogProviderLogSink` with built-in Datadog payload validation.
+- `createElkProviderLogSink` with built-in ELK payload validation.
+- `createOpenTelemetryProviderLogSink` with built-in OpenTelemetry payload validation.
+- `toDatadogLogEvent` for Datadog-style payload mapping.
+- `toElkLogDocument` for ELK-style document mapping.
+- `toOpenTelemetryLogRecord` for OpenTelemetry-style log record mapping.
+
+Provider-ready resilience templates:
+
+- `createProviderResilienceTemplate('datadog-http')`
+- `createProviderResilienceTemplate('elk-http')`
+- `createProviderResilienceTemplate('opentelemetry-http')`
+
+These templates compose transport resilience defaults with provider-specific payload serialization so you can spread them into `createHttpLogSink`.
+
+```ts
+import {
+	createHttpLogSink,
+	createLogger,
+	createProviderResilienceTemplate,
+} from '@rsiddha/js-utils';
+
+const datadogTemplate = createProviderResilienceTemplate('datadog-http', {
+	profile: 'availability-first',
+	datadogMapper: {
+		service: 'checkout-api',
+		env: 'prod',
+		source: 'node',
+	},
+});
+
+const sink = createHttpLogSink({
+	url: 'https://http-intake.logs.datadoghq.com/v1/input/<api-key>',
+	...datadogTemplate,
+});
+
+const logger = createLogger({ sink, minLevel: 'info' });
+logger.info('provider template ready');
+```
+
+Observability dashboard contracts:
+
+- `createObservabilityDashboardContractPreset('operations')`
+- `createObservabilityDashboardContractPreset('reliability')`
+- `createObservabilityDashboardContractPreset('diagnostics')`
+
+Use these presets to standardize metric/event naming and dashboard panel expectations across environments.
+
+```ts
+import { createObservabilityDashboardContractPreset } from '@rsiddha/js-utils';
+
+const contract = createObservabilityDashboardContractPreset('reliability');
+
+// Example integration output:
+// contract.metrics -> transport KPI contracts (names/units/sources)
+// contract.events -> event stream contracts for state transitions and tuning hooks
+// contract.recommendedPanels -> starter dashboard widgets
+```
+
+Validation helpers:
+
+- `isDatadogLogPayload`
+- `isElkLogDocument`
+- `isOpenTelemetryLogRecord`
+
+Preset sink example:
+
+```ts
+import {
+	createDatadogProviderLogSink,
+	createLogger,
+} from '@rsiddha/js-utils';
+
+const sink = createDatadogProviderLogSink({
+	mapper: {
+		service: 'billing-api',
+		env: 'prod',
+	},
+	emitPayload: async (payload) => {
+		await Promise.resolve(payload);
+	},
+	onValidationError: (payload) => {
+		// Optional callback when payload fails schema validation.
+		console.warn('Invalid Datadog payload', payload);
+	},
+});
+
+const logger = createLogger({ sink });
+logger.info('provider preset ready');
+```
+
 ## 7. API Reference
 
 Notes:

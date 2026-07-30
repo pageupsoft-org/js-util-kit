@@ -21,12 +21,13 @@ export function clearItems(prefix?: string | null): boolean {
             storage.clear();
             return true;
         }
+        const safePrefix = prefix as string;
 
         const keysToRemove: string[] = [];
 
         for (let index = 0; index < storage.length; index += 1) {
             const key = storage.key(index);
-            if (key != null && key.startsWith(prefix)) {
+            if (key != null && key.startsWith(safePrefix)) {
                 keysToRemove.push(key);
             }
         }
