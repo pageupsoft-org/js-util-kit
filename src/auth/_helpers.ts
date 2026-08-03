@@ -19,8 +19,9 @@ export function _decodeBase64Url(value: string): string | null {
             return text;
         }
 
-        if (typeof Buffer !== 'undefined') {
-            return Buffer.from(paddedBase64, 'base64').toString('utf8');
+        const bufferLike = (globalThis as { Buffer?: { from: (input: string, encoding: string) => { toString: (encoding: string) => string } } }).Buffer;
+        if (bufferLike != null) {
+            return bufferLike.from(paddedBase64, 'base64').toString('utf8');
         }
 
         return null;
