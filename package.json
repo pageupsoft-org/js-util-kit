@@ -1,13 +1,15 @@
 {
   "name": "@rsiddha/js-utils",
-  "version": "1.1.1",
+  "version": "1.2.3",
   "description": "",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
   "files": [
-    "dist"
+    "dist",
+    "docs",
+    "CHANGELOG.md"
   ],
   "exports": {
     ".": {
@@ -28,6 +30,14 @@
   },
   "keywords": [],
   "author": "",
+  "homepage": "https://github.com/pageupsoft-org/js-utils#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pageupsoft-org/js-utils.git"
+  },
+  "bugs": {
+    "url": "https://github.com/pageupsoft-org/js-utils/issues"
+  },
   "license": "ISC",
   "devDependencies": {
     "@types/jest": "^30.0.0",
