@@ -16,6 +16,7 @@ The array module provides type-safe utilities for chunking, deduplication, shuff
 | `flatten` | Flatten nested arrays | Normalizing nested data |
 | `groupBy` | Group array by key function | Analytics, categorization |
 | `sortBy` | Sort by one or more key functions | Flexible ordering |
+| `sortArray` | Build reusable sort comparator rules | Multi-field and locale-aware sorting |
 
 ---
 
@@ -280,6 +281,76 @@ sortBy([], (x) => x); // []
 
 ---
 
+### `sortArray`
+
+```typescript
+sortArray<T>(
+  rules: readonly SortRule<T>[],
+  options?: SortArrayOptions
+): (a: T, b: T) => number
+```
+
+**What:** Creates a comparator function that you pass to `Array.prototype.sort`.
+
+**When:** Multi-column sorting, reusable sorting policies, locale-aware string sort, and custom null ordering.
+
+**Why:** More expressive than writing large inline comparator functions repeatedly.
+
+**Example:**
+```typescript
+import { sortArray } from '@rsiddha/js-utils';
+
+const users = [
+  { firstName: 'Ava', lastName: 'Stone', age: 30 },
+  { firstName: 'Ben', lastName: 'Stone', age: 22 },
+  { firstName: 'Cara', lastName: 'Adams', age: 40 },
+];
+
+// Sort by last name asc, then age desc
+const byLastThenAge = sortArray<typeof users[number]>([
+  { property: 'lastName', direction: 'asc' },
+  { property: 'age', direction: 'desc' },
+]);
+
+const sortedUsers = [...users].sort(byLastThenAge);
+// [
+//   { firstName: 'Cara', lastName: 'Adams', age: 40 },
+//   { firstName: 'Ava', lastName: 'Stone', age: 30 },
+//   { firstName: 'Ben', lastName: 'Stone', age: 22 }
+// ]
+
+// Sort by selector function + locale-aware string compare
+const products = [
+  { name: 'Éclair', price: 5 },
+  { name: 'apple', price: 3 },
+  { name: 'Banana', price: 4 },
+];
+
+const byName = sortArray<typeof products[number]>(
+  [{ property: (p) => p.name, direction: 'asc' }],
+  { locales: 'en', localeCompareOptions: { sensitivity: 'base' } }
+);
+
+const sortedProducts = [...products].sort(byName);
+
+// Null handling control
+const rows = [
+  { label: 'A', score: 10 },
+  { label: 'B', score: null },
+  { label: 'C', score: undefined },
+];
+
+const byScoreNullLast = sortArray<typeof rows[number]>(
+  [{ property: 'score', direction: 'asc' }],
+  { nulls: 'last' }
+);
+
+[...rows].sort(byScoreNullLast);
+// [{ label: 'A', score: 10 }, { label: 'B', score: null }, { label: 'C', score: undefined }]
+```
+
+---
+
 ## Common Patterns
 
 ### Pagination with Chunk + Slice
@@ -353,3 +424,4 @@ const pivot = monthsSorted.map(month => {
 | `flatten` | Yes | Yes | None |
 | `groupBy` | Yes | Yes | None |
 | `sortBy` | Yes | Yes | None |
+| `sortArray` | Yes | Yes | None |
