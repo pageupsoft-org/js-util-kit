@@ -60,10 +60,11 @@ export * from './<function-name-in-kebab-case>.js';
 ### 4. Verify the build
 
 ```bash
+npm test -- --runInBand
 npm run build
 ```
 
-The build must complete without TypeScript errors. There are no other checks to run yet.
+Tests and build must pass without errors.
 
 ---
 
@@ -76,6 +77,7 @@ The build must complete without TypeScript errors. There are no other checks to 
 - [ ] Function is pure — no mutation of inputs, no side effects.
 - [ ] `null`/`undefined` are not accepted unless explicitly part of the API contract.
 - [ ] Domain barrel (`index.ts`) updated.
+- [ ] `npm test -- --runInBand` passes cleanly.
 - [ ] `npm run build` passes cleanly.
 
 ---
