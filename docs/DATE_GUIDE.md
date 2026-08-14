@@ -1,6 +1,6 @@
 # Date Utilities Guide
 
-Comprehensive guide for `@rsiddha/js-utils` date utilities.
+Comprehensive guide for `js-util-kit` date utilities.
 
 ## Overview
 
@@ -61,7 +61,7 @@ formatDate(date: Date | string, pattern?: string): string
 
 **Example:**
 ```typescript
-import { formatDate } from '@rsiddha/js-utils';
+import { formatDate } from 'js-util-kit';
 
 const date = new Date('2026-07-30T14:05:09');
 
@@ -92,7 +92,7 @@ parseDate(dateStr: string, pattern?: string): Date | undefined
 
 **Example:**
 ```typescript
-import { parseDate } from '@rsiddha/js-utils';
+import { parseDate } from 'js-util-kit';
 
 parseDate('30/07/2026', 'DD/MM/YYYY'); // Date(2026-07-30T00:00:00)
 parseDate('07/30/2026', 'MM/DD/YYYY'); // Date(2026-07-30T00:00:00)
@@ -119,7 +119,7 @@ addDays(date: Date | string, days: number): Date
 
 **Example:**
 ```typescript
-import { addDays } from '@rsiddha/js-utils';
+import { addDays } from 'js-util-kit';
 
 const today = new Date('2026-07-30');
 
@@ -152,7 +152,7 @@ subtractDays(date: Date | string, days: number): Date
 
 **Example:**
 ```typescript
-import { subtractDays } from '@rsiddha/js-utils';
+import { subtractDays } from 'js-util-kit';
 
 const today = new Date('2026-07-30');
 
@@ -182,7 +182,7 @@ isSameDay(dateA: Date | string, dateB: Date | string): boolean
 
 **Example:**
 ```typescript
-import { isSameDay } from '@rsiddha/js-utils';
+import { isSameDay } from 'js-util-kit';
 
 isSameDay('2026-07-30', '2026-07-30');     // true
 isSameDay('2026-07-30T10:00', '2026-07-30T23:59'); // true (same day, different times)
@@ -207,7 +207,7 @@ getDaysBetween(dateA: Date | string, dateB: Date | string): number
 
 **Example:**
 ```typescript
-import { getDaysBetween } from '@rsiddha/js-utils';
+import { getDaysBetween } from 'js-util-kit';
 
 getDaysBetween('2026-07-30', '2026-08-06');  // 7
 getDaysBetween('2026-01-01', '2026-12-31');  // 365
@@ -227,7 +227,7 @@ getDaysBetween('2026-07-30T10:00', '2026-07-31T06:00'); // 0 (same calendar day 
 
 ### Format a Date for Display
 ```typescript
-import { formatDate, isSameDay } from '@rsiddha/js-utils';
+import { formatDate, isSameDay } from 'js-util-kit';
 
 function formatUserDate(dateStr: string): string {
   const date = parseDate(dateStr, 'YYYY-MM-DD');
@@ -243,7 +243,7 @@ function formatUserDate(dateStr: string): string {
 
 ### Countdown Timer
 ```typescript
-import { getDaysBetween, formatDate } from '@rsiddha/js-utils';
+import { getDaysBetween, formatDate } from 'js-util-kit';
 
 function getCountdown(targetDateStr: string): string {
   const target = parseDate(targetDateStr, 'YYYY-MM-DD')!;
@@ -259,7 +259,7 @@ getCountdown('2026-12-31'); // '153 days until December 31, 2026'
 
 ### Expiry Check
 ```typescript
-import { getDaysBetween } from '@rsiddha/js-utils';
+import { getDaysBetween } from 'js-util-kit';
 
 function isExpired(expiryDate: Date): boolean {
   return getDaysBetween(new Date(), expiryDate) < 0;

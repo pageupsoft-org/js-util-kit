@@ -1,6 +1,6 @@
 # Auth Utilities Guide
 
-Comprehensive guide for `@rsiddha/js-utils` auth utilities (JWT-like tokens, password hashing, API keys).
+Comprehensive guide for `js-util-kit` auth utilities (JWT-like tokens, password hashing, API keys).
 
 ## Overview
 
@@ -40,7 +40,7 @@ generateApiKey(prefix?: string): string
 
 **Example:**
 ```typescript
-import { generateApiKey } from '@rsiddha/js-utils';
+import { generateApiKey } from 'js-util-kit';
 
 // Default key
 generateApiKey();
@@ -84,7 +84,7 @@ hashPassword(password: string, rounds?: number): Promise<string>
 
 **Example:**
 ```typescript
-import { hashPassword, verifyPassword } from '@rsiddha/js-utils';
+import { hashPassword, verifyPassword } from 'js-util-kit';
 
 // Registration
 async function registerUser(email: string, password: string): Promise<void> {
@@ -119,7 +119,7 @@ verifyPassword(password: string, hash: string): Promise<boolean>
 
 **Example:**
 ```typescript
-import { verifyPassword } from '@rsiddha/js-utils';
+import { verifyPassword } from 'js-util-kit';
 
 const isValid = await verifyPassword('userPassword123', '$2b$14$...');
 // true or false
@@ -143,7 +143,7 @@ generateToken(payload: Record<string, unknown>, secret: string, expiresIn?: stri
 
 **Example:**
 ```typescript
-import { generateToken, verifyToken } from '@rsiddha/js-utils';
+import { generateToken, verifyToken } from 'js-util-kit';
 
 // Session token (expires in 24 hours)
 const token = await generateToken(
@@ -179,7 +179,7 @@ verifyToken(token: string, secret: string): Promise<Record<string, unknown> | nu
 
 **Example:**
 ```typescript
-import { verifyToken } from '@rsiddha/js-utils';
+import { verifyToken } from 'js-util-kit';
 
 async function authMiddleware(req: Request, res: Response, next: NextFunction): Promise<void> {
   const authHeader = req.headers.authorization;
@@ -211,7 +211,7 @@ async function authMiddleware(req: Request, res: Response, next: NextFunction): 
 
 ### Complete Registration Flow
 ```typescript
-import { hashPassword, generateToken, verifyToken } from '@rsiddha/js-utils';
+import { hashPassword, generateToken, verifyToken } from 'js-util-kit';
 
 class AuthService {
   async register(email: string, password: string): Promise<{ userId: string; token: string }> {
@@ -267,7 +267,7 @@ class AuthService {
 
 ### Password Reset Flow
 ```typescript
-import { generateToken, verifyToken, hashPassword } from '@rsiddha/js-utils';
+import { generateToken, verifyToken, hashPassword } from 'js-util-kit';
 
 async function requestPasswordReset(email: string): Promise<void> {
   const user = await db.findUser(email);

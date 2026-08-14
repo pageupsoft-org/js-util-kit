@@ -1,6 +1,6 @@
 # Number Utilities Guide
 
-Comprehensive guide for `@rsiddha/js-utils` number utilities.
+Comprehensive guide for `js-util-kit` number utilities.
 
 ## Overview
 
@@ -36,7 +36,7 @@ clamp(value: number, min: number, max: number): number
 
 **Example:**
 ```typescript
-import { clamp } from '@rsiddha/js-utils';
+import { clamp } from 'js-util-kit';
 
 // Rating (1-5)
 clamp(7, 1, 5);    // 5 (capped at max)
@@ -75,7 +75,7 @@ roundToDecimalPlaces(value: number, decimalPlaces: number, roundingMode?: 'half-
 
 **Example:**
 ```typescript
-import { roundToDecimalPlaces } from '@rsiddha/js-utils';
+import { roundToDecimalPlaces } from 'js-util-kit';
 
 // Basic rounding
 roundToDecimalPlaces(3.14159, 2);              // 3.14
@@ -128,7 +128,7 @@ interface CurrencyOptions {
 
 **Example:**
 ```typescript
-import { formatCurrency } from '@rsiddha/js-utils';
+import { formatCurrency } from 'js-util-kit';
 
 // Default (USD, en-US)
 formatCurrency(1999.99);                    // '$1,999.99'
@@ -178,7 +178,7 @@ interface PercentageOptions {
 
 **Example:**
 ```typescript
-import { formatPercentage } from '@rsiddha/js-utils';
+import { formatPercentage } from 'js-util-kit';
 
 // Basic usage (0-1 scale)
 formatPercentage(0.856);                     // '86%'
@@ -219,7 +219,7 @@ calculatePercentage(part: number, total: number, options?: { decimals?: number }
 
 **Example:**
 ```typescript
-import { calculatePercentage } from '@rsiddha/js-utils';
+import { calculatePercentage } from 'js-util-kit';
 
 // Basic
 calculatePercentage(25, 100);                 // 25
@@ -255,7 +255,7 @@ isNumeric(value: unknown): boolean
 
 **Example:**
 ```typescript
-import { isNumeric } from '@rsiddha/js-utils';
+import { isNumeric } from 'js-util-kit';
 
 isNumeric(42);                          // true
 isNumeric(3.14);                        // true
@@ -289,7 +289,7 @@ randomNumber(min: number, max: number, options?: { inclusive?: boolean }): numbe
 
 **Example:**
 ```typescript
-import { randomNumber } from '@rsiddha/js-utils';
+import { randomNumber } from 'js-util-kit';
 
 // Integer (1-6, simulating a die)
 randomNumber(1, 6, { inclusive: true });       // e.g., 4
@@ -312,7 +312,7 @@ randomNumber(0, 100, { inclusive: true });       // e.g., 42
 
 ### Pagination Calculator
 ```typescript
-import { clamp, calculatePercentage } from '@rsiddha/js-utils';
+import { clamp, calculatePercentage } from 'js-util-kit';
 
 class Paginator {
   constructor(
@@ -350,7 +350,7 @@ paginator.progress;     // 89.6
 
 ### Price Calculator with Tax
 ```typescript
-import { roundToDecimalPlaces, formatCurrency } from '@rsiddha/js-utils';
+import { roundToDecimalPlaces, formatCurrency } from 'js-util-kit';
 
 function calculatePrice(subtotal: number, taxRate: number, discount: number = 0): { subtotal: number; discount: number; tax: number; total: number; totalFormatted: string } {
   const discounted = subtotal * (1 - discount / 100);
@@ -374,7 +374,7 @@ calculatePrice(49.99, 8.25, 10);
 
 ### Progress Bar Rendering
 ```typescript
-import { formatPercentage, calculatePercentage, clamp } from '@rsiddha/js-utils';
+import { formatPercentage, calculatePercentage, clamp } from 'js-util-kit';
 
 function renderProgressBar(current: number, total: number, barWidth = 20): string {
   const pct = clamp(calculatePercentage(current, total, { decimals: 0 }), 0, 100);

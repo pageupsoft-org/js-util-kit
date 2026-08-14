@@ -1,11 +1,11 @@
 # Angular Integration Guide
 
-This guide covers integrating `@rsiddha/js-utils` logger and error handling utilities into Angular applications.
+This guide covers integrating `js-util-kit` logger and error handling utilities into Angular applications.
 
 ## Installation
 
 ```bash
-npm install @rsiddha/js-utils
+npm install js-util-kit
 ```
 
 ## Logger Integration
@@ -15,7 +15,7 @@ npm install @rsiddha/js-utils
 ```typescript
 // src/app/core/services/logger.service.ts
 import { Injectable, inject } from '@angular/core';
-import { createLogger, createConsoleLogSink, createHttpLogSink, Logger, LogLevel } from '@rsiddha/js-utils';
+import { createLogger, createConsoleLogSink, createHttpLogSink, Logger, LogLevel } from 'js-util-kit';
 import { environment } from '@environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -84,7 +84,7 @@ export class LoggerService {
 // src/app/core/handlers/global-error.handler.ts
 import { ErrorHandler, Injectable, inject } from '@angular/core';
 import { LoggerService } from '../services/logger.service';
-import { normalizeError, toAppError } from '@rsiddha/js-utils';
+import { normalizeError, toAppError } from 'js-util-kit';
 
 @Injectable()
 export class GlobalErrorHandler implements ErrorHandler {
@@ -122,7 +122,7 @@ import { throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { inject } from '@angular/core';
 import { LoggerService } from '../services/logger.service';
-import { normalizeError, AppError } from '@rsiddha/js-utils';
+import { normalizeError, AppError } from 'js-util-kit';
 
 export const errorLoggingInterceptor: HttpInterceptorFn = (req, next) => {
   const logger = inject(LoggerService);
@@ -176,7 +176,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { LoggerService } from '@core/services/logger.service';
-import { AppError, NotFoundError, normalizeError } from '@rsiddha/js-utils';
+import { AppError, NotFoundError, normalizeError } from 'js-util-kit';
 
 interface User {
   id: string;
@@ -236,7 +236,7 @@ export class UserService {
 
 ```typescript
 // src/app/core/errors/domain.errors.ts
-import { AppError } from '@rsiddha/js-utils';
+import { AppError } from 'js-util-kit';
 
 export class PaymentError extends AppError {
   constructor(message: string, public readonly paymentId: string, options?: { code?: string; context?: Record<string, unknown> }) {
@@ -339,7 +339,7 @@ export const environment = {
 ```typescript
 // src/app/core/services/logger.service.spec.ts
 import { TestBed } from '@angular/core/testing';
-import { createNoopLogSink, createLogger, Logger } from '@rsiddha/js-utils';
+import { createNoopLogSink, createLogger, Logger } from 'js-util-kit';
 import { LoggerService } from './logger.service';
 
 describe('LoggerService', () => {

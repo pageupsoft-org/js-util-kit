@@ -1,4 +1,4 @@
-# @rsiddha/js-utils
+# js-util-kit
 
 A comprehensive TypeScript utility library providing type-safe, zero-dependency utilities for modern JavaScript/TypeScript applications.
 
@@ -27,7 +27,7 @@ A comprehensive TypeScript utility library providing type-safe, zero-dependency 
 ## Installation
 
 ```bash
-npm install @rsiddha/js-utils
+npm install js-util-kit
 ```
 
 ## Features

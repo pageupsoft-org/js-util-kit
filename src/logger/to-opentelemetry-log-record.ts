@@ -39,7 +39,7 @@ export function toOpenTelemetryLogRecord(
         body: event.message,
         attributes,
         scope: {
-            name: options.scopeName ?? '@rsiddha/js-utils',
+            name: options.scopeName ?? 'js-util-kit',
         },
     };
 

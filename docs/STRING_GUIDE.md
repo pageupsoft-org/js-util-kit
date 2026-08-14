@@ -1,11 +1,11 @@
 # String Utilities Guide
 
-Comprehensive guide for `@rsiddha/js-utils` string manipulation utilities.
+Comprehensive guide for `js-util-kit` string manipulation utilities.
 
 ## Installation
 
 ```bash
-npm install @rsiddha/js-utils
+npm install js-util-kit
 ```
 
 ## Quick Reference
@@ -41,7 +41,7 @@ capitalize(str: string): string
 
 **Example:**
 ```typescript
-import { capitalize } from '@rsiddha/js-utils';
+import { capitalize } from 'js-util-kit';
 
 capitalize('john doe');           // 'John Doe'
 capitalize('MARY JANE');          // 'Mary Jane'
@@ -68,7 +68,7 @@ capitalizeFirstLetter(str: string): string
 
 **Example:**
 ```typescript
-import { capitalizeFirstLetter } from '@rsiddha/js-utils';
+import { capitalizeFirstLetter } from 'js-util-kit';
 
 capitalizeFirstLetter('hello world');     // 'Hello world'
 capitalizeFirstLetter('HELLO WORLD');     // 'HELLO WORLD'
@@ -94,7 +94,7 @@ truncateText(str: string, maxLength: number, suffix?: string): string
 
 **Example:**
 ```typescript
-import { truncateText } from '@rsiddha/js-utils';
+import { truncateText } from 'js-util-kit';
 
 truncateText('This is a long description', 20);        // 'This is a long...'
 truncateText('Short', 20);                             // 'Short'
@@ -121,7 +121,7 @@ toTitleCase(str: string): string
 
 **Example:**
 ```typescript
-import { toTitleCase } from '@rsiddha/js-utils';
+import { toTitleCase } from 'js-util-kit';
 
 toTitleCase('the quick brown fox');           // 'The Quick Brown Fox'
 toTitleCase('a tale of two cities');          // 'A Tale of Two Cities'
@@ -154,7 +154,7 @@ interface MaskOptions {
 
 **Example:**
 ```typescript
-import { maskSensitiveData } from '@rsiddha/js-utils';
+import { maskSensitiveData } from 'js-util-kit';
 
 // Credit cards
 maskSensitiveData('4111 1111 1111 1111');           // '************1111'
@@ -205,7 +205,7 @@ interface SanitizeOptions {
 
 **Example:**
 ```typescript
-import { sanitizeFilename } from '@rsiddha/js-utils';
+import { sanitizeFilename } from 'js-util-kit';
 
 sanitizeFilename('My Document.pdf');                    // 'My_Document.pdf'
 sanitizeFilename('../../etc/passwd');                   // '____etc_passwd'
@@ -235,7 +235,7 @@ removeSpecialCharacters(str: string, allowSpaces?: boolean): string
 
 **Example:**
 ```typescript
-import { removeSpecialCharacters } from '@rsiddha/js-utils';
+import { removeSpecialCharacters } from 'js-util-kit';
 
 removeSpecialCharacters('Hello, World!');        // 'HelloWorld'
 removeSpecialCharacters('Hello, World!', true);  // 'Hello World'
@@ -261,7 +261,7 @@ removeExtraWhitespaces(str: string): string
 
 **Example:**
 ```typescript
-import { removeExtraWhitespaces } from '@rsiddha/js-utils';
+import { removeExtraWhitespaces } from 'js-util-kit';
 
 removeExtraWhitespaces('  Hello    World  ');    // 'Hello World'
 removeExtraWhitespaces('Line\n\n\nbreak');       // 'Line break'
@@ -286,7 +286,7 @@ isNullOrWhitespace(str: string | null | undefined): boolean
 
 **Example:**
 ```typescript
-import { isNullOrWhitespace } from '@rsiddha/js-utils';
+import { isNullOrWhitespace } from 'js-util-kit';
 
 isNullOrWhitespace(null);            // true
 isNullOrWhitespace(undefined);       // true
@@ -313,7 +313,7 @@ generateRandomString(length: number, charset?: string): string
 
 **Example:**
 ```typescript
-import { generateRandomString } from '@rsiddha/js-utils';
+import { generateRandomString } from 'js-util-kit';
 
 // Default charset: A-Z a-z 0-9
 generateRandomString(32);              // 'K7m9Xp2Qr4...' (32 chars)
@@ -337,7 +337,7 @@ generateRandomString(43, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01
 
 ### User Display Name Formatter
 ```typescript
-import { capitalize, truncateText, isNullOrWhitespace } from '@rsiddha/js-utils';
+import { capitalize, truncateText, isNullOrWhitespace } from 'js-util-kit';
 
 function formatDisplayName(rawName: string | null | undefined, maxLen = 30): string {
   if (isNullOrWhitespace(rawName)) return 'Anonymous';
@@ -352,7 +352,7 @@ formatDisplayName(null);               // 'Anonymous'
 
 ### Slug Generator
 ```typescript
-import { toTitleCase, removeSpecialCharacters, removeExtraWhitespaces } from '@rsiddha/js-utils';
+import { toTitleCase, removeSpecialCharacters, removeExtraWhitespaces } from 'js-util-kit';
 
 function generateSlug(title: string): string {
   const cleaned = removeExtraWhitespaces(title.toLowerCase());
@@ -365,7 +365,7 @@ generateSlug('  My Blog Post: "Hello World!"  '); // 'my-blog-post-hello-world'
 
 ### Safe Log Output
 ```typescript
-import { maskSensitiveData } from '@rsiddha/js-utils';
+import { maskSensitiveData } from 'js-util-kit';
 
 function safeLog(data: Record<string, unknown>): Record<string, unknown> {
   const sensitiveKeys = ['password', 'token', 'secret', 'key', 'authorization', 'creditCard', 'ssn'];
@@ -384,7 +384,7 @@ function safeLog(data: Record<string, unknown>): Record<string, unknown> {
 
 ### File Upload Handler
 ```typescript
-import { sanitizeFilename, validateFileExtension, validateFileSize } from '@rsiddha/js-utils';
+import { sanitizeFilename, validateFileExtension, validateFileSize } from 'js-util-kit';
 
 function processUpload(file: File): { safeName: string } | { error: string } {
   const extCheck = validateFileExtension(file.name, ['.jpg', '.jpeg', '.png', '.webp', '.pdf']);

@@ -1,11 +1,11 @@
 # React Integration Guide
 
-This guide covers integrating `@rsiddha/js-utils` logger and error handling utilities into React applications (including Next.js, Remix, Vite, CRA).
+This guide covers integrating `js-util-kit` logger and error handling utilities into React applications (including Next.js, Remix, Vite, CRA).
 
 ## Installation
 
 ```bash
-npm install @rsiddha/js-utils
+npm install js-util-kit
 ```
 
 ## Logger Integration
@@ -15,7 +15,7 @@ npm install @rsiddha/js-utils
 ```typescript
 // src/lib/logger/LoggerContext.tsx
 import React, { createContext, useContext, useMemo, useEffect, ReactNode } from 'react';
-import { createLogger, createConsoleLogSink, createHttpLogSink, Logger, LogLevel } from '@rsiddha/js-utils';
+import { createLogger, createConsoleLogSink, createHttpLogSink, Logger, LogLevel } from 'js-util-kit';
 
 interface LoggerContextValue {
   logger: Logger;
@@ -89,7 +89,7 @@ export function useLogger(): Logger {
 ```typescript
 // src/lib/errors/ErrorBoundary.tsx
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { normalizeError, toAppError } from '@rsiddha/js-utils';
+import { normalizeError, toAppError } from 'js-util-kit';
 import { useLogger } from '../logger/LoggerContext';
 
 interface Props {
@@ -171,7 +171,7 @@ export function ErrorBoundaryWrapper({ children, fallback }: Props) {
 // src/lib/hooks/useApiError.ts
 import { useCallback } from 'react';
 import { useLogger } from '../logger/LoggerContext';
-import { normalizeError, AppError, toAppError } from '@rsiddha/js-utils';
+import { normalizeError, AppError, toAppError } from 'js-util-kit';
 
 export function useApiError() {
   const logger = useLogger();
@@ -262,7 +262,7 @@ export default function RootLayout({
 import { useState } from 'react';
 import { useLogger } from '@/lib/logger/LoggerContext';
 import { useApiError } from '@/lib/hooks/useApiError';
-import { ValidationError, AppError } from '@rsiddha/js-utils';
+import { ValidationError, AppError } from 'js-util-kit';
 
 interface LoginForm {
   email: string;
@@ -356,7 +356,7 @@ export function LoginForm() {
 ```typescript
 // src/services/api/client.ts
 import { useLogger } from '@/lib/logger/LoggerContext';
-import { normalizeError, AppError, NotFoundError } from '@rsiddha/js-utils';
+import { normalizeError, AppError, NotFoundError } from 'js-util-kit';
 
 class ApiClient {
   private logger: ReturnType<typeof useLogger> | null = null;
@@ -407,7 +407,7 @@ export const apiClient = new ApiClient();
 ```typescript
 // src/services/api/userService.ts
 import { apiClient } from './client';
-import { AppError, NotFoundError, normalizeError } from '@rsiddha/js-utils';
+import { AppError, NotFoundError, normalizeError } from 'js-util-kit';
 
 export interface User {
   id: string;
@@ -437,7 +437,7 @@ export async function updateUser(id: string, data: Partial<User>): Promise<User>
 
 ```typescript
 // src/lib/errors/domain.ts
-import { AppError } from '@rsiddha/js-utils';
+import { AppError } from 'js-util-kit';
 
 export class AuthError extends AppError {
   constructor(message: string, public readonly code: string = 'AUTH_ERROR', context?: Record<string, unknown>) {
@@ -482,7 +482,7 @@ VITE_LOG_ENDPOINT=https://logs.myapp.com/events
 ```typescript
 // src/lib/logger/LoggerContext.test.tsx
 import { render, screen, act } from '@testing-library/react';
-import { createNoopLogSink, createLogger, Logger } from '@rsiddha/js-utils';
+import { createNoopLogSink, createLogger, Logger } from 'js-util-kit';
 import { LoggerProvider, useLogger } from './LoggerContext';
 
 const testLogger = createLogger({ sink: createNoopLogSink() });

@@ -1,6 +1,6 @@
 # Validation Utilities Guide
 
-Comprehensive guide for the validation utilities in `@rsiddha/js-utils`.
+Comprehensive guide for the validation utilities in `js-util-kit`.
 
 ## Overview
 
@@ -38,7 +38,7 @@ Validates email addresses against RFC 5322 specification with practical adjustme
 
 ### How to use
 ```typescript
-import { isValidEmail } from '@rsiddha/js-utils';
+import { isValidEmail } from 'js-util-kit';
 
 const email = 'user@example.com';
 if (isValidEmail(email)) {
@@ -106,7 +106,7 @@ Validates phone numbers in E.164 international format (+CC NNN NNN NNNN).
 
 ### How to use
 ```typescript
-import { isValidPhoneNumber } from '@rsiddha/js-utils';
+import { isValidPhoneNumber } from 'js-util-kit';
 
 const phone = '+15551234567';
 if (isValidPhoneNumber(phone)) {
@@ -169,7 +169,7 @@ Validates URLs with support for http, https, ftp protocols and standard URL comp
 
 ### How to use
 ```typescript
-import { isValidUrl } from '@rsiddha/js-utils';
+import { isValidUrl } from 'js-util-kit';
 
 const url = 'https://api.example.com/v1/users?active=true';
 if (isValidUrl(url)) {
@@ -234,7 +234,7 @@ Evaluates password strength against configurable criteria: length, character cla
 
 ### How to use
 ```typescript
-import { isStrongPassword, type PasswordStrengthOptions } from '@rsiddha/js-utils';
+import { isStrongPassword, type PasswordStrengthOptions } from 'js-util-kit';
 
 const options: PasswordStrengthOptions = {
   minLength: 12,
@@ -317,7 +317,7 @@ Checks if a file size (in bytes) is within configured min/max limits.
 
 ### How to use
 ```typescript
-import { validateFileSize } from '@rsiddha/js-utils';
+import { validateFileSize } from 'js-util-kit';
 
 // Client-side with File object
 const file = fileInput.files[0];
@@ -374,7 +374,7 @@ Validates a filename's extension against an allowlist (case-insensitive).
 
 ### How to use
 ```typescript
-import { validateFileExtension } from '@rsiddha/js-utils';
+import { validateFileExtension } from 'js-util-kit';
 
 const allowed = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
 const fileName = 'photo.JPG';
@@ -433,7 +433,7 @@ import {
   isStrongPassword,
   validateFileSize,
   validateFileExtension 
-} from '@rsiddha/js-utils';
+} from 'js-util-kit';
 
 interface ValidationResult {
   valid: boolean;
@@ -486,7 +486,7 @@ function validateRegistrationForm(data: {
 ### Server-Side Validation Middleware (Express)
 ```typescript
 import { Request, Response, NextFunction } from 'express';
-import { isValidEmail, isValidUrl } from '@rsiddha/js-utils';
+import { isValidEmail, isValidUrl } from 'js-util-kit';
 
 export function validateRequest(req: Request, res: Response, next: NextFunction) {
   const { email, website } = req.body;

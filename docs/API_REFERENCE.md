@@ -1,6 +1,6 @@
 # API Reference
 
-Complete API reference for `@rsiddha/js-utils` organized by domain and environment compatibility.
+Complete API reference for `js-util-kit` organized by domain and environment compatibility.
 
 ## Environment Compatibility Legend
 
@@ -271,16 +271,16 @@ All **Universal** and **Browser Only** utilities are available.
 
 ```typescript
 // Logger
-import { createLogger, createConsoleLogSink } from '@rsiddha/js-utils';
+import { createLogger, createConsoleLogSink } from 'js-util-kit';
 
 // Error Handling
-import { AppError, normalizeError, toAppError } from '@rsiddha/js-utils';
+import { AppError, normalizeError, toAppError } from 'js-util-kit';
 
 // Validation
-import { isValidEmail, isStrongPassword } from '@rsiddha/js-utils';
+import { isValidEmail, isStrongPassword } from 'js-util-kit';
 
 // Browser-specific
-import { copyToClipboard, downloadFile, isMobileDevice } from '@rsiddha/js-utils';
+import { copyToClipboard, downloadFile, isMobileDevice } from 'js-util-kit';
 ```
 
 ### Backend (Node.js/Express) Applications
@@ -288,16 +288,16 @@ All **Universal** utilities are available. Browser-only utilities will not work.
 
 ```typescript
 // Logger with HTTP sink
-import { createLogger, createHttpLogSink, createProviderResilienceTemplate } from '@rsiddha/js-utils';
+import { createLogger, createHttpLogSink, createProviderResilienceTemplate } from 'js-util-kit';
 
 // Error Handling
-import { AppError, ValidationError, NotFoundError, normalizeError } from '@rsiddha/js-utils';
+import { AppError, ValidationError, NotFoundError, normalizeError } from 'js-util-kit';
 
 // Validation, String, Number, Object, URL, Date, Auth, Array
-import { isValidEmail, clamp, deepClone, parseQueryString } from '@rsiddha/js-utils';
+import { isValidEmail, clamp, deepClone, parseQueryString } from 'js-util-kit';
 
 // File utilities (Universal only)
-import { getFileExtension, formatFileSize } from '@rsiddha/js-utils';
+import { getFileExtension, formatFileSize } from 'js-util-kit';
 ```
 
 ### Shared Utilities (Both Environments)
@@ -329,6 +329,6 @@ All utilities are written in TypeScript with full type definitions included. The
 Import types directly:
 
 ```typescript
-import type { Logger, LogLevel, CreateLoggerOptions } from '@rsiddha/js-utils';
-import type { ErrorEnvelope, AppErrorOptions } from '@rsiddha/js-utils';
+import type { Logger, LogLevel, CreateLoggerOptions } from 'js-util-kit';
+import type { ErrorEnvelope, AppErrorOptions } from 'js-util-kit';
 ```

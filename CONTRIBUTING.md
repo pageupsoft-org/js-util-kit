@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for contributing to `@rsiddha/js-utils`.
+Thanks for contributing to `js-util-kit`.
 
 Read the [Style Guide](docs/STYLE_GUIDE.md) before writing any code. Every pull request is held to those conventions.
 

@@ -44,7 +44,7 @@ Why to use:
 
 Example:
 ```ts
-import type { ErrorEnvelope } from '@rsiddha/js-utils';
+import type { ErrorEnvelope } from 'js-util-kit';
 
 const envelope: ErrorEnvelope = {
     name: 'ValidationError',
@@ -68,7 +68,7 @@ Why to use:
 
 Example:
 ```ts
-import { AppError } from '@rsiddha/js-utils';
+import { AppError } from 'js-util-kit';
 
 throw new AppError('Payment gateway unavailable', {
     code: 'PAYMENT_UNAVAILABLE',
@@ -89,7 +89,7 @@ Why to use:
 
 Example:
 ```ts
-import { ValidationError } from '@rsiddha/js-utils';
+import { ValidationError } from 'js-util-kit';
 
 throw new ValidationError('Email is invalid', {
     code: 'VALIDATION_EMAIL',
@@ -110,7 +110,7 @@ Why to use:
 
 Example:
 ```ts
-import { NotFoundError } from '@rsiddha/js-utils';
+import { NotFoundError } from 'js-util-kit';
 
 throw new NotFoundError('User was not found', {
     code: 'USER_NOT_FOUND',
@@ -131,7 +131,7 @@ Why to use:
 
 Example:
 ```ts
-import { isErrorEnvelope, normalizeError } from '@rsiddha/js-utils';
+import { isErrorEnvelope, normalizeError } from 'js-util-kit';
 
 function ensureEnvelope(value: unknown) {
     return isErrorEnvelope(value) ? value : normalizeError(value);
@@ -151,7 +151,7 @@ Why to use:
 
 Example:
 ```ts
-import { normalizeError } from '@rsiddha/js-utils';
+import { normalizeError } from 'js-util-kit';
 
 try {
     riskyOperation();
@@ -180,7 +180,7 @@ Why to use:
 
 Example:
 ```ts
-import { enrichErrorEnvelope, normalizeError } from '@rsiddha/js-utils';
+import { enrichErrorEnvelope, normalizeError } from 'js-util-kit';
 
 const base = normalizeError(new Error('DB timeout'));
 const enriched = enrichErrorEnvelope(base, {
@@ -202,7 +202,7 @@ Why to use:
 
 Example:
 ```ts
-import { toAppError } from '@rsiddha/js-utils';
+import { toAppError } from 'js-util-kit';
 
 function wrapUnknown(value: unknown) {
     const appError = toAppError(value);
@@ -225,7 +225,7 @@ Why to use:
 
 Example:
 ```ts
-import { createLogger, createConsoleLogSink } from '@rsiddha/js-utils';
+import { createLogger, createConsoleLogSink } from 'js-util-kit';
 
 const logger = createLogger({
     minLevel: 'info',
@@ -251,7 +251,7 @@ Why to use:
 
 Example:
 ```ts
-import { shouldLogLevel } from '@rsiddha/js-utils';
+import { shouldLogLevel } from 'js-util-kit';
 
 const allowed = shouldLogLevel('warn', 'info');
 ```
@@ -269,7 +269,7 @@ Why to use:
 
 Example:
 ```ts
-import { redactLogPayload } from '@rsiddha/js-utils';
+import { redactLogPayload } from 'js-util-kit';
 
 const payload = {
     user: 'a@company.com',
@@ -296,7 +296,7 @@ Why to use:
 
 Example:
 ```ts
-import { createLogger, createNoopLogSink } from '@rsiddha/js-utils';
+import { createLogger, createNoopLogSink } from 'js-util-kit';
 
 const logger = createLogger({ sink: createNoopLogSink() });
 logger.info('This is intentionally discarded');
@@ -315,7 +315,7 @@ Why to use:
 
 Example:
 ```ts
-import { createLogger, createConsoleLogSink } from '@rsiddha/js-utils';
+import { createLogger, createConsoleLogSink } from 'js-util-kit';
 
 const logger = createLogger({
     sink: createConsoleLogSink({
@@ -340,7 +340,7 @@ Why to use:
 
 Minimal example:
 ```ts
-import { createLogger, createHttpLogSink } from '@rsiddha/js-utils';
+import { createLogger, createHttpLogSink } from 'js-util-kit';
 
 const sink = createHttpLogSink({
     url: 'https://logs.example.com/events',
@@ -392,7 +392,7 @@ Why to use:
 
 Example:
 ```ts
-import { createHttpLogSink, createRetryCircuitPolicyPreset } from '@rsiddha/js-utils';
+import { createHttpLogSink, createRetryCircuitPolicyPreset } from 'js-util-kit';
 
 const policy = createRetryCircuitPolicyPreset('balanced');
 const sink = createHttpLogSink({
@@ -414,7 +414,7 @@ Why to use:
 
 Example:
 ```ts
-import { createHttpLogSink, createTransportResilienceProfilePreset } from '@rsiddha/js-utils';
+import { createHttpLogSink, createTransportResilienceProfilePreset } from 'js-util-kit';
 
 const profile = createTransportResilienceProfilePreset('availability-first');
 const sink = createHttpLogSink({
@@ -436,7 +436,7 @@ Why to use:
 
 Example:
 ```ts
-import { createHttpLogSink, createProviderResilienceTemplate } from '@rsiddha/js-utils';
+import { createHttpLogSink, createProviderResilienceTemplate } from 'js-util-kit';
 
 const template = createProviderResilienceTemplate('elk-http', {
     profile: 'cost-efficient',
@@ -462,7 +462,7 @@ Why to use:
 
 Example:
 ```ts
-import { createObservabilityDashboardContractPreset } from '@rsiddha/js-utils';
+import { createObservabilityDashboardContractPreset } from 'js-util-kit';
 
 const contract = createObservabilityDashboardContractPreset('reliability');
 console.log(contract.metrics, contract.events, contract.recommendedPanels);
@@ -481,7 +481,7 @@ Why to use:
 
 Example:
 ```ts
-import { createProviderLogSink } from '@rsiddha/js-utils';
+import { createProviderLogSink } from 'js-util-kit';
 
 const sink = createProviderLogSink({
     mapEvent: (event) => ({ text: event.message, level: event.level }),
@@ -505,7 +505,7 @@ Why to use:
 
 Example:
 ```ts
-import { createDatadogProviderLogSink } from '@rsiddha/js-utils';
+import { createDatadogProviderLogSink } from 'js-util-kit';
 
 const sink = createDatadogProviderLogSink({
     mapper: { service: 'checkout-api', env: 'prod', source: 'node' },
@@ -528,7 +528,7 @@ Why to use:
 
 Example:
 ```ts
-import { createElkProviderLogSink } from '@rsiddha/js-utils';
+import { createElkProviderLogSink } from 'js-util-kit';
 
 const sink = createElkProviderLogSink({
     mapper: { index: 'app-logs' },
@@ -551,7 +551,7 @@ Why to use:
 
 Example:
 ```ts
-import { createOpenTelemetryProviderLogSink } from '@rsiddha/js-utils';
+import { createOpenTelemetryProviderLogSink } from 'js-util-kit';
 
 const sink = createOpenTelemetryProviderLogSink({
     mapper: { scopeName: 'checkout-api' },
@@ -579,7 +579,7 @@ Why to use:
 
 Example:
 ```ts
-import { toDatadogLogEvent } from '@rsiddha/js-utils';
+import { toDatadogLogEvent } from 'js-util-kit';
 
 const payload = toDatadogLogEvent(
     {
@@ -609,7 +609,7 @@ Why to use:
 
 Example:
 ```ts
-import { isElkLogDocument } from '@rsiddha/js-utils';
+import { isElkLogDocument } from 'js-util-kit';
 
 const ok = isElkLogDocument(candidatePayload);
 ```
@@ -627,7 +627,7 @@ Why to use:
 
 Example:
 ```ts
-import { logUnknownError } from '@rsiddha/js-utils';
+import { logUnknownError } from 'js-util-kit';
 
 try {
     runTask();
@@ -653,7 +653,7 @@ import {
     createHttpLogSink,
     createLogger,
     createTransportResilienceProfilePreset,
-} from '@rsiddha/js-utils';
+} from 'js-util-kit';
 
 const remoteProfile = createTransportResilienceProfilePreset('cost-efficient');
 const remoteSink = createHttpLogSink({
@@ -686,7 +686,7 @@ import {
     createLogger,
     createObservabilityDashboardContractPreset,
     createProviderResilienceTemplate,
-} from '@rsiddha/js-utils';
+} from 'js-util-kit';
 
 const template = createProviderResilienceTemplate('datadog-http', {
     profile: 'availability-first',
@@ -731,7 +731,7 @@ import {
     enrichErrorEnvelope,
     logUnknownError,
     normalizeError,
-} from '@rsiddha/js-utils';
+} from 'js-util-kit';
 
 function getUserOrThrow(user: { id: string } | null) {
     if (user == null) {

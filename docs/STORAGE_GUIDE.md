@@ -1,6 +1,6 @@
 # Storage Utilities Guide
 
-Comprehensive guide for `@rsiddha/js-utils` browser storage utilities (`localStorage` / `sessionStorage`).
+Comprehensive guide for `js-util-kit` browser storage utilities (`localStorage` / `sessionStorage`).
 
 ## Overview
 
@@ -37,7 +37,7 @@ setItem<T>(storage: 'local' | 'session', key: string, value: T): void
 
 **Example:**
 ```typescript
-import { setItem, getItem } from '@rsiddha/js-utils';
+import { setItem, getItem } from 'js-util-kit';
 
 // Store primitives
 setItem('local', 'theme', 'dark');
@@ -76,7 +76,7 @@ getItem<T>(storage: 'local' | 'session', key: string, fallback?: T): T
 
 **Example:**
 ```typescript
-import { getItem } from '@rsiddha/js-utils';
+import { getItem } from 'js-util-kit';
 
 // Retrieve primitives
 const theme: string = getItem('local', 'theme', 'light');
@@ -119,7 +119,7 @@ removeItem(storage: 'local' | 'session', key: string): void
 
 **Example:**
 ```typescript
-import { removeItem } from '@rsiddha/js-utils';
+import { removeItem } from 'js-util-kit';
 
 // Remove a single key
 removeItem('local', 'theme');
@@ -145,7 +145,7 @@ clearItems(storage: 'local' | 'session'): void
 
 **Example:**
 ```typescript
-import { clearItems } from '@rsiddha/js-utils';
+import { clearItems } from 'js-util-kit';
 
 // Clear all user data on logout
 function logout(): void {
@@ -162,7 +162,7 @@ function logout(): void {
 
 ### User Preferences
 ```typescript
-import { setItem, getItem } from '@rsiddha/js-utils';
+import { setItem, getItem } from 'js-util-kit';
 
 interface AppSettings {
   theme: 'light' | 'dark';
@@ -185,7 +185,7 @@ function saveSettings(settings: Partial<AppSettings>): void {
 
 ### Authentication Token
 ```typescript
-import { setItem, getItem, removeItem } from '@rsiddha/js-utils';
+import { setItem, getItem, removeItem } from 'js-util-kit';
 
 const TOKEN_KEY = 'auth_token';
 
@@ -204,7 +204,7 @@ function clearToken(): void {
 
 ### Cached API Data with TTL
 ```typescript
-import { setItem, getItem, removeItem } from '@rsiddha/js-utils';
+import { setItem, getItem, removeItem } from 'js-util-kit';
 
 interface CacheEntry<T> {
   data: T;

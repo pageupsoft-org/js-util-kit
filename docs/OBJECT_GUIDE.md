@@ -1,6 +1,6 @@
 # Object Utilities Guide
 
-Comprehensive guide for `@rsiddha/js-utils` object utilities.
+Comprehensive guide for `js-util-kit` object utilities.
 
 ## Overview
 
@@ -35,7 +35,7 @@ deepClone<T>(value: T): T
 
 **Example:**
 ```typescript
-import { deepClone } from '@rsiddha/js-utils';
+import { deepClone } from 'js-util-kit';
 
 const original = {
   name: 'config',
@@ -81,7 +81,7 @@ mergeObjects<T extends Record<string, unknown>>(...objects: (T | undefined | nul
 
 **Example:**
 ```typescript
-import { mergeObjects } from '@rsiddha/js-utils';
+import { mergeObjects } from 'js-util-kit';
 
 const defaults = {
   theme: 'light',
@@ -139,7 +139,7 @@ pick<T extends Record<string, unknown>, K extends keyof T>(obj: T, keys: readonl
 
 **Example:**
 ```typescript
-import { pick } from '@rsiddha/js-utils';
+import { pick } from 'js-util-kit';
 
 const user = {
   id: 'u-123',
@@ -182,7 +182,7 @@ omit<T extends Record<string, unknown>, K extends keyof T>(obj: T, keys: readonl
 
 **Example:**
 ```typescript
-import { omit } from '@rsiddha/js-utils';
+import { omit } from 'js-util-kit';
 
 const internal = {
   id: 'u-123',
@@ -218,7 +218,7 @@ isEqual(a: unknown, b: unknown): boolean
 
 **Example:**
 ```typescript
-import { isEqual } from '@rsiddha/js-utils';
+import { isEqual } from 'js-util-kit';
 
 // Primitives
 isEqual(1, 1);                     // true
@@ -276,7 +276,7 @@ interface RemoveOptions {
 
 **Example:**
 ```typescript
-import { removeEmptyProperties } from '@rsiddha/js-utils';
+import { removeEmptyProperties } from 'js-util-kit';
 
 const dirty = {
   name: 'John',
@@ -314,7 +314,7 @@ removeEmptyProperties(dirty, { removeZero: true, removeNaN: true });
 
 ### Immutable State Update
 ```typescript
-import { deepClone, pick } from '@rsiddha/js-utils';
+import { deepClone, pick } from 'js-util-kit';
 
 interface State {
   users: Record<string, { name: string; email: string; role: string }>;
@@ -332,7 +332,7 @@ function updateUserRole(state: State, userId: string, newRole: string): State {
 
 ### API Response Builder
 ```typescript
-import { pick, omit } from '@rsiddha/js-utils';
+import { pick, omit } from 'js-util-kit';
 
 interface UserDocument {
   id: string;
@@ -363,7 +363,7 @@ function toLoginResponse(doc: UserDocument, token: string) {
 
 ### Config Merger with Deep Defaults
 ```typescript
-import { mergeObjects } from '@rsiddha/js-utils';
+import { mergeObjects } from 'js-util-kit';
 
 const APP_DEFAULTS = {
   server: { port: 3000, host: '0.0.0.0', timeout: 30000 },
@@ -379,7 +379,7 @@ function loadConfig(envConfig: Record<string, unknown>) {
 
 ### Change Detection for React
 ```typescript
-import { isEqual } from '@rsiddha/js-utils';
+import { isEqual } from 'js-util-kit';
 import { useRef, useMemo } from 'react';
 
 function useDeepCompareMemo<T>(factory: () => T, deps: unknown[]): T {
@@ -393,7 +393,7 @@ function useDeepCompareMemo<T>(factory: () => T, deps: unknown[]): T {
 
 ### Clean Query Params
 ```typescript
-import { removeEmptyProperties, buildQueryString } from '@rsiddha/js-utils';
+import { removeEmptyProperties, buildQueryString } from 'js-util-kit';
 
 function buildSearchParams(filters: Record<string, unknown>): string {
   const cleaned = removeEmptyProperties(filters);

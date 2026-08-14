@@ -1,6 +1,6 @@
 # Array Utilities Guide
 
-Comprehensive guide for `@rsiddha/js-utils` array utilities.
+Comprehensive guide for `js-util-kit` array utilities.
 
 ## Overview
 
@@ -42,7 +42,7 @@ chunk<T>(array: readonly T[], size: number): readonly T[][]
 
 **Example:**
 ```typescript
-import { chunk } from '@rsiddha/js-utils';
+import { chunk } from 'js-util-kit';
 
 // Batch API calls
 const userIds = ['u1', 'u2', 'u3', 'u4', 'u5', 'u6', 'u7'];
@@ -81,7 +81,7 @@ unique<T>(array: readonly T[]): readonly T[]
 
 **Example:**
 ```typescript
-import { unique } from '@rsiddha/js-utils';
+import { unique } from 'js-util-kit';
 
 unique([1, 2, 2, 3, 1, 4]);           // [1, 2, 3, 4]
 unique(['a', 'b', 'a', 'c', 'b']);    // ['a', 'b', 'c']
@@ -116,7 +116,7 @@ shuffle<T>(array: readonly T[]): readonly T[]
 
 **Example:**
 ```typescript
-import { shuffle } from '@rsiddha/js-utils';
+import { shuffle } from 'js-util-kit';
 
 const original = ['a', 'b', 'c', 'd', 'e'];
 const shuffled = shuffle(original);
@@ -153,7 +153,7 @@ flatten<T>(array: readonly (T | readonly T[])[]): readonly T[]
 
 **Example:**
 ```typescript
-import { flatten } from '@rsiddha/js-utils';
+import { flatten } from 'js-util-kit';
 
 flatten([[1, 2], [3, 4], [5]]);        // [1, 2, 3, 4, 5]
 flatten([1, [2, 3], 4]);               // [1, 2, 3, 4]
@@ -191,7 +191,7 @@ groupBy<T>(array: readonly T[], keyFn: (item: T) => string): Record<string, read
 
 **Example:**
 ```typescript
-import { groupBy } from '@rsiddha/js-utils';
+import { groupBy } from 'js-util-kit';
 
 const users = [
   { name: 'Alice', role: 'admin', dept: 'engineering' },
@@ -247,7 +247,7 @@ sortBy<T>(array: readonly T[], keyFn: (item: T) => string | number, order?: 'asc
 
 **Example:**
 ```typescript
-import { sortBy } from '@rsiddha/js-utils';
+import { sortBy } from 'js-util-kit';
 
 const users = [
   { name: 'Charlie', age: 30 },
@@ -298,7 +298,7 @@ sortArray<T>(
 
 **Example:**
 ```typescript
-import { sortArray } from '@rsiddha/js-utils';
+import { sortArray } from 'js-util-kit';
 
 const users = [
   { firstName: 'Ava', lastName: 'Stone', age: 30 },
@@ -355,7 +355,7 @@ const byScoreNullLast = sortArray<typeof rows[number]>(
 
 ### Pagination with Chunk + Slice
 ```typescript
-import { chunk } from '@rsiddha/js-utils';
+import { chunk } from 'js-util-kit';
 
 function paginate<T>(items: readonly T[], page: number, pageSize: number): { items: readonly T[]; totalPages: number; totalItems: number } {
   const totalItems = items.length;
@@ -371,7 +371,7 @@ paginate(items, 3, 10); // { items: [21..30], totalPages: 10, totalItems: 100 }
 
 ### Data Processing Pipeline
 ```typescript
-import { shuffle, chunk, sortBy, unique, flatten } from '@rsiddha/js-utils';
+import { shuffle, chunk, sortBy, unique, flatten } from 'js-util-kit';
 
 // Process orders: deduplicate, sort, chunk for batch processing
 function processOrders(orders: Array<{ id: string; amount: number; status: string }>): readonly readonly { id: string; amount: number }[][] {
@@ -383,7 +383,7 @@ function processOrders(orders: Array<{ id: string; amount: number; status: strin
 
 ### Grouped Bar Chart Data
 ```typescript
-import { groupBy, sortBy } from '@rsiddha/js-utils';
+import { groupBy, sortBy } from 'js-util-kit';
 
 const sales = [
   { month: 'Jan', region: 'North', revenue: 10000 },

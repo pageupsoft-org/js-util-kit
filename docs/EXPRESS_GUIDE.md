@@ -1,11 +1,11 @@
 # Express/Node.js Integration Guide
 
-This guide covers integrating `@rsiddha/js-utils` logger and error handling utilities into Express.js and Node.js backend applications.
+This guide covers integrating `js-util-kit` logger and error handling utilities into Express.js and Node.js backend applications.
 
 ## Installation
 
 ```bash
-npm install @rsiddha/js-utils
+npm install js-util-kit
 ```
 
 ## Logger Integration
@@ -14,7 +14,7 @@ npm install @rsiddha/js-utils
 
 ```typescript
 // src/lib/logger/index.ts
-import { createLogger, createConsoleLogSink, createHttpLogSink, createProviderResilienceTemplate, Logger, LogLevel } from '@rsiddha/js-utils';
+import { createLogger, createConsoleLogSink, createHttpLogSink, createProviderResilienceTemplate, Logger, LogLevel } from 'js-util-kit';
 
 export interface LoggerConfig {
   serviceName: string;
@@ -181,7 +181,7 @@ declare global {
 // src/lib/middleware/errorHandler.ts
 import { Request, Response, NextFunction } from 'express';
 import { getLogger } from '../logger';
-import { normalizeError, AppError, toAppError, isErrorEnvelope, ErrorEnvelope } from '@rsiddha/js-utils';
+import { normalizeError, AppError, toAppError, isErrorEnvelope, ErrorEnvelope } from 'js-util-kit';
 
 export interface ApiErrorResponse {
   error: {
@@ -266,7 +266,7 @@ import express, { Application, Request, Response, NextFunction } from 'express';
 import { createAppLogger, getLogger, shutdownLogger } from './lib/logger';
 import { createRequestLogger } from './lib/middleware/requestLogger';
 import { createErrorHandler } from './lib/middleware/errorHandler';
-import { AppError, ValidationError, NotFoundError } from '@rsiddha/js-utils';
+import { AppError, ValidationError, NotFoundError } from 'js-util-kit';
 
 const app: Application = express();
 
@@ -328,7 +328,7 @@ export { app, logger };
 // src/controllers/userController.ts
 import { Request, Response, NextFunction } from 'express';
 import { getLogger } from '../lib/logger';
-import { AppError, ValidationError, NotFoundError, normalizeError } from '@rsiddha/js-utils';
+import { AppError, ValidationError, NotFoundError, normalizeError } from 'js-util-kit';
 import { UserService } from '../services/userService';
 
 const logger = getLogger();
@@ -401,7 +401,7 @@ export class UserController {
 
 ```typescript
 // src/services/userService.ts
-import { AppError, NotFoundError, ValidationError, normalizeError } from '@rsiddha/js-utils';
+import { AppError, NotFoundError, ValidationError, normalizeError } from 'js-util-kit';
 import { getLogger } from '../lib/logger';
 import { UserRepository } from '../repositories/userRepository';
 
@@ -517,7 +517,7 @@ export default router;
 ```typescript
 // src/workers/emailWorker.ts
 import { getLogger } from '../lib/logger';
-import { normalizeError, AppError } from '@rsiddha/js-utils';
+import { normalizeError, AppError } from 'js-util-kit';
 
 const logger = getLogger();
 
@@ -560,7 +560,7 @@ async function sendEmail(to: string, subject: string, body: string): Promise<voi
 // src/repositories/userRepository.ts
 import { PrismaClient } from '@prisma/client';
 import { getLogger } from '../lib/logger';
-import { AppError, normalizeError } from '@rsiddha/js-utils';
+import { AppError, normalizeError } from 'js-util-kit';
 import { User } from '../services/userService';
 
 const logger = getLogger();
@@ -653,7 +653,7 @@ export const config = {
 
 ```typescript
 // src/lib/logger/__tests__/logger.test.ts
-import { createLogger, createNoopLogSink, createConsoleLogSink } from '@rsiddha/js-utils';
+import { createLogger, createNoopLogSink, createConsoleLogSink } from 'js-util-kit';
 import { createAppLogger } from '../logger';
 
 describe('Logger', () => {

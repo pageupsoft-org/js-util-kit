@@ -1,6 +1,6 @@
 # URL Utilities Guide
 
-Comprehensive guide for `@rsiddha/js-utils` URL utilities.
+Comprehensive guide for `js-util-kit` URL utilities.
 
 ## Overview
 
@@ -33,7 +33,7 @@ parseQueryString(queryString: string): Record<string, string>
 
 **Example:**
 ```typescript
-import { parseQueryString } from '@rsiddha/js-utils';
+import { parseQueryString } from 'js-util-kit';
 
 parseQueryString('name=John&age=30');
 // { name: 'John', age: '30' }
@@ -69,7 +69,7 @@ buildQueryString(params: Record<string, unknown>): string
 
 **Example:**
 ```typescript
-import { buildQueryString } from '@rsiddha/js-utils';
+import { buildQueryString } from 'js-util-kit';
 
 buildQueryString({ name: 'John Doe', age: 30 });
 // 'name=John+Doe&age=30'
@@ -105,7 +105,7 @@ appendQueryParameters(url: string, params: Record<string, unknown>): string
 
 **Example:**
 ```typescript
-import { appendQueryParameters } from '@rsiddha/js-utils';
+import { appendQueryParameters } from 'js-util-kit';
 
 appendQueryParameters('/api/users', { page: 1, limit: 20 });
 // '/api/users?page=1&limit=20'
@@ -138,7 +138,7 @@ getBaseUrl(url: string): string
 
 **Example:**
 ```typescript
-import { getBaseUrl } from '@rsiddha/js-utils';
+import { getBaseUrl } from 'js-util-kit';
 
 getBaseUrl('https://example.com/api/users?id=1#section');
 // 'https://example.com/api/users'
@@ -159,7 +159,7 @@ getBaseUrl('/relative/path?q=1');
 
 ### Pagination Component
 ```typescript
-import { parseQueryString, buildQueryString, appendQueryParameters } from '@rsiddha/js-utils';
+import { parseQueryString, buildQueryString, appendQueryParameters } from 'js-util-kit';
 
 function Pagination({ currentPage, totalPages }: { currentPage: number; totalPages: number }) {
   const buildPageUrl = (page: number) => {
@@ -186,7 +186,7 @@ function Pagination({ currentPage, totalPages }: { currentPage: number; totalPag
 
 ### API Client with URL Helpers
 ```typescript
-import { appendQueryParameters, parseQueryString, getBaseUrl } from '@rsiddha/js-utils';
+import { appendQueryParameters, parseQueryString, getBaseUrl } from 'js-util-kit';
 
 class ApiClient {
   private baseUrl: string;
@@ -220,7 +220,7 @@ client.getUsers({ page: 2, limit: 25, q: 'john' });
 
 ### Deep Link Handling
 ```typescript
-import { parseQueryString, buildQueryString, appendQueryParameters } from '@rsiddha/js-utils';
+import { parseQueryString, buildQueryString, appendQueryParameters } from 'js-util-kit';
 
 function updateDeepLink(params: Record<string, unknown>): void {
   const current = parseQueryString(window.location.search.replace('?', ''));

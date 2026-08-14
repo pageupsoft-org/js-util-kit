@@ -1,6 +1,6 @@
 # Browser Utilities Guide
 
-Comprehensive guide for `@rsiddha/js-utils` browser-specific utilities.
+Comprehensive guide for `js-util-kit` browser-specific utilities.
 
 ## Overview
 
@@ -42,7 +42,7 @@ isMobileDevice(): boolean
 
 **Example:**
 ```typescript
-import { isMobileDevice } from '@rsiddha/js-utils';
+import { isMobileDevice } from 'js-util-kit';
 
 if (isMobileDevice()) {
   enableMobileNavigation();
@@ -78,7 +78,7 @@ isTouchDevice(): boolean
 
 **Example:**
 ```typescript
-import { isTouchDevice } from '@rsiddha/js-utils';
+import { isTouchDevice } from 'js-util-kit';
 
 // Adjust UI for touch
 const useHover = !isTouchDevice();
@@ -124,7 +124,7 @@ copyToClipboard(text: string): Promise<boolean>
 
 **Example:**
 ```typescript
-import { copyToClipboard } from '@rsiddha/js-utils';
+import { copyToClipboard } from 'js-util-kit';
 
 // Basic usage
 async function handleCopy() {
@@ -185,7 +185,7 @@ downloadBlob(data: Blob | Uint8Array | ArrayBuffer, filename: string, mimeType?:
 
 **Example:**
 ```typescript
-import { downloadBlob } from '@rsiddha/js-utils';
+import { downloadBlob } from 'js-util-kit';
 
 // Download JSON data
 const data = { users: [{ id: 1, name: 'John' }] };
@@ -219,7 +219,7 @@ downloadFile(url: string, filename?: string): Promise<void>
 
 **Example:**
 ```typescript
-import { downloadFile } from '@rsiddha/js-utils';
+import { downloadFile } from 'js-util-kit';
 
 // Download a PDF report
 await downloadFile('/api/reports/invoice-123.pdf', 'invoice.pdf');
@@ -247,7 +247,7 @@ openInNewTab(url: string): Window | null
 
 **Example:**
 ```typescript
-import { openInNewTab } from '@rsiddha/js-utils';
+import { openInNewTab } from 'js-util-kit';
 
 function handleExternalLink(url: string): void {
   openInNewTab(url);
@@ -288,7 +288,7 @@ interface ScrollOptions {
 
 **Example:**
 ```typescript
-import { scrollToElement } from '@rsiddha/js-utils';
+import { scrollToElement } from 'js-util-kit';
 
 // Scroll to error summary after form validation
 function handleSubmit() {
@@ -316,7 +316,7 @@ scrollToElement(targetEl, { offset: -64 }); // 64px for navbar height
 
 ### Responsive Feature Detection
 ```typescript
-import { isMobileDevice, isTouchDevice } from '@rsiddha/js-utils';
+import { isMobileDevice, isTouchDevice } from 'js-util-kit';
 
 function getDeviceCapabilities() {
   return {
@@ -330,7 +330,7 @@ function getDeviceCapabilities() {
 
 ### Download Report
 ```typescript
-import { downloadBlob } from '@rsiddha/js-utils';
+import { downloadBlob } from 'js-util-kit';
 
 async function exportReport(data: unknown): Promise<void> {
   const json = JSON.stringify(data, null, 2);

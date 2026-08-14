@@ -1,6 +1,6 @@
 # File Utilities Guide
 
-Comprehensive guide for `@rsiddha/js-utils` file utilities.
+Comprehensive guide for `js-util-kit` file utilities.
 
 ## Overview
 
@@ -44,7 +44,7 @@ getFileExtension(filepath: string): string | undefined
 
 **Example:**
 ```typescript
-import { getFileExtension } from '@rsiddha/js-utils';
+import { getFileExtension } from 'js-util-kit';
 
 getFileExtension('photo.jpg');            // '.jpg'
 getFileExtension('/path/to/document.pdf'); // '.pdf'
@@ -71,7 +71,7 @@ formatFileSize(bytes: number): string
 
 **Example:**
 ```typescript
-import { formatFileSize } from '@rsiddha/js-utils';
+import { formatFileSize } from 'js-util-kit';
 
 formatFileSize(0);                  // '0 B'
 formatFileSize(500);                // '500 B'
@@ -102,7 +102,7 @@ downloadFile(url: string, filename?: string): Promise<void>
 
 **Example:**
 ```typescript
-import { downloadFile } from '@rsiddha/js-utils';
+import { downloadFile } from 'js-util-kit';
 
 // Download a PDF
 await downloadFile('/api/reports/invoice-123.pdf', 'invoice.pdf');
@@ -130,7 +130,7 @@ convertFileToBase64(file: File | Blob): Promise<string>
 
 **Example:**
 ```typescript
-import { convertFileToBase64 } from '@rsiddha/js-utils';
+import { convertFileToBase64 } from 'js-util-kit';
 
 // Image preview before upload
 async function handleFileSelect(input: HTMLInputElement): Promise<void> {
@@ -162,7 +162,7 @@ async function uploadImage(file: File): Promise<void> {
 
 ### File Upload Validation
 ```typescript
-import { getFileExtension, formatFileSize, validateFileExtension, validateFileSize } from '@rsiddha/js-utils';
+import { getFileExtension, formatFileSize, validateFileExtension, validateFileSize } from 'js-util-kit';
 
 function validateUpload(file: File): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
@@ -183,7 +183,7 @@ function validateUpload(file: File): { valid: boolean; errors: string[] } {
 
 ### File Size Display with Progress
 ```typescript
-import { formatFileSize } from '@rsiddha/js-utils';
+import { formatFileSize } from 'js-util-kit';
 
 function renderUploadProgress(bytesLoaded: number, bytesTotal: number): string {
   const pct = Math.round((bytesLoaded / bytesTotal) * 100);
