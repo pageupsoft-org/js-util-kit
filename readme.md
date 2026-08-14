@@ -6,23 +6,23 @@ A comprehensive TypeScript utility library providing type-safe, zero-dependency 
 
 | Guide | Description |
 |-------|-------------|
-| [Changelog](https://github.com/pageupsoft-org/js-utils/blob/main/CHANGELOG.md) | Release notes and version history |
-| [Logger & Error Handler Guide](https://github.com/pageupsoft-org/js-utils/blob/main/docs/LOGGER_ERROR_USAGE_GUIDE.md) | Comprehensive guide for logging and error handling utilities |
-| [API Reference](https://github.com/pageupsoft-org/js-utils/blob/main/docs/API_REFERENCE.md) | Complete API reference for all exported utilities |
-| [Validation Guide](https://github.com/pageupsoft-org/js-utils/blob/main/docs/VALIDATION_GUIDE.md) | Email, phone, URL, password, file size, and extension validation |
-| [String Guide](https://github.com/pageupsoft-org/js-utils/blob/main/docs/STRING_GUIDE.md) | Capitalization, masking, sanitization, and random string generation |
-| [Number Guide](https://github.com/pageupsoft-org/js-utils/blob/main/docs/NUMBER_GUIDE.md) | Clamping, rounding, currency/percentage formatting, and random numbers |
-| [Object Guide](https://github.com/pageupsoft-org/js-utils/blob/main/docs/OBJECT_GUIDE.md) | Deep clone, merge, pick, omit, equality, and cleanup utilities |
-| [Storage Guide](https://github.com/pageupsoft-org/js-utils/blob/main/docs/STORAGE_GUIDE.md) | Type-safe localStorage/sessionStorage wrappers (browser) |
-| [Browser Guide](https://github.com/pageupsoft-org/js-utils/blob/main/docs/BROWSER_GUIDE.md) | Device detection, clipboard, downloads, and scroll utilities |
-| [File Guide](https://github.com/pageupsoft-org/js-utils/blob/main/docs/FILE_GUIDE.md) | File extension, size formatting, downloads, and base64 conversion |
-| [URL Guide](https://github.com/pageupsoft-org/js-utils/blob/main/docs/URL_GUIDE.md) | Query string parsing/building and URL manipulation |
-| [Date Guide](https://github.com/pageupsoft-org/js-utils/blob/main/docs/DATE_GUIDE.md) | Formatting, parsing, and date math utilities |
-| [Auth Guide](https://github.com/pageupsoft-org/js-utils/blob/main/docs/AUTH_GUIDE.md) | Token generation, password hashing, and verification |
-| [Array Guide](https://github.com/pageupsoft-org/js-utils/blob/main/docs/ARRAY_GUIDE.md) | Chunking, deduplication, shuffling, grouping, and sorting |
-| [Angular Integration Guide](https://github.com/pageupsoft-org/js-utils/blob/main/docs/ANGULAR_GUIDE.md) | Angular-specific integration and usage patterns |
-| [React Integration Guide](https://github.com/pageupsoft-org/js-utils/blob/main/docs/REACT_GUIDE.md) | React-specific integration and usage patterns |
-| [Express Integration Guide](https://github.com/pageupsoft-org/js-utils/blob/main/docs/EXPRESS_GUIDE.md) | Express/Node.js backend integration guide |
+| [Changelog](https://github.com/pageupsoft-org/js-util-kit/blob/main/CHANGELOG.md) | Release notes and version history |
+| [Logger & Error Handler Guide](https://github.com/pageupsoft-org/js-util-kit/blob/main/docs/LOGGER_ERROR_USAGE_GUIDE.md) | Comprehensive guide for logging and error handling utilities |
+| [API Reference](https://github.com/pageupsoft-org/js-util-kit/blob/main/docs/API_REFERENCE.md) | Complete API reference for all exported utilities |
+| [Validation Guide](https://github.com/pageupsoft-org/js-util-kit/blob/main/docs/VALIDATION_GUIDE.md) | Email, phone, URL, password, file size, and extension validation |
+| [String Guide](https://github.com/pageupsoft-org/js-util-kit/blob/main/docs/STRING_GUIDE.md) | Capitalization, masking, sanitization, and random string generation |
+| [Number Guide](https://github.com/pageupsoft-org/js-util-kit/blob/main/docs/NUMBER_GUIDE.md) | Clamping, rounding, currency/percentage formatting, and random numbers |
+| [Object Guide](https://github.com/pageupsoft-org/js-util-kit/blob/main/docs/OBJECT_GUIDE.md) | Deep clone, merge, pick, omit, equality, and cleanup utilities |
+| [Storage Guide](https://github.com/pageupsoft-org/js-util-kit/blob/main/docs/STORAGE_GUIDE.md) | Type-safe localStorage/sessionStorage wrappers (browser) |
+| [Browser Guide](https://github.com/pageupsoft-org/js-util-kit/blob/main/docs/BROWSER_GUIDE.md) | Device detection, clipboard, downloads, and scroll utilities |
+| [File Guide](https://github.com/pageupsoft-org/js-util-kit/blob/main/docs/FILE_GUIDE.md) | File extension, size formatting, downloads, and base64 conversion |
+| [URL Guide](https://github.com/pageupsoft-org/js-util-kit/blob/main/docs/URL_GUIDE.md) | Query string parsing/building and URL manipulation |
+| [Date Guide](https://github.com/pageupsoft-org/js-util-kit/blob/main/docs/DATE_GUIDE.md) | Formatting, parsing, and date math utilities |
+| [Auth Guide](https://github.com/pageupsoft-org/js-util-kit/blob/main/docs/AUTH_GUIDE.md) | Token generation, password hashing, and verification |
+| [Array Guide](https://github.com/pageupsoft-org/js-util-kit/blob/main/docs/ARRAY_GUIDE.md) | Chunking, deduplication, shuffling, grouping, and sorting |
+| [Angular Integration Guide](https://github.com/pageupsoft-org/js-util-kit/blob/main/docs/ANGULAR_GUIDE.md) | Angular-specific integration and usage patterns |
+| [React Integration Guide](https://github.com/pageupsoft-org/js-util-kit/blob/main/docs/REACT_GUIDE.md) | React-specific integration and usage patterns |
+| [Express Integration Guide](https://github.com/pageupsoft-org/js-util-kit/blob/main/docs/EXPRESS_GUIDE.md) | Express/Node.js backend integration guide |
 
 ## Installation
 

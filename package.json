@@ -30,13 +30,13 @@
   },
   "keywords": [],
   "author": "",
-  "homepage": "https://github.com/pageupsoft-org/js-utils#readme",
+  "homepage": "https://github.com/pageupsoft-org/js-util-kit#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pageupsoft-org/js-utils.git"
+    "url": "git+https://github.com/pageupsoft-org/js-util-kit.git"
   },
   "bugs": {
-    "url": "https://github.com/pageupsoft-org/js-utils/issues"
+    "url": "https://github.com/pageupsoft-org/js-util-kit/issues"
   },
   "license": "ISC",
   "devDependencies": {
