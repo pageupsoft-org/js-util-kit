@@ -10,10 +10,14 @@ The storage module provides type-safe wrappers around browser storage APIs. Valu
 
 | Function | Description |
 |----------|-------------|
-| `setItem` | Type-safe storage setter with JSON serialization |
-| `getItem` | Type-safe storage getter with JSON deserialization |
-| `removeItem` | Remove key from storage |
-| `clearItems` | Clear all items from storage |
+| `setLocalStorage` | Type-safe localStorage setter with JSON serialization |
+| `getLocalStorage` | Type-safe localStorage getter with JSON deserialization |
+| `removeLocalStorage` | Remove key from localStorage |
+| `clearLocalStorage` | Clear all items from localStorage |
+| `setSessionStorage` | Type-safe sessionStorage setter with JSON serialization |
+| `getSessionStorage` | Type-safe sessionStorage getter with JSON deserialization |
+| `removeSessionStorage` | Remove key from sessionStorage |
+| `clearSessionStorage` | Clear all items from sessionStorage |
 
 ## Prerequisites
 
@@ -23,13 +27,13 @@ The storage module provides type-safe wrappers around browser storage APIs. Valu
 
 ## Function Details
 
-### `setItem`
+### `setLocalStorage`
 
 ```typescript
-setItem<T>(storage: 'local' | 'session', key: string, value: T): void
+setLocalStorage<T>(key: string, value: T): boolean
 ```
 
-**What:** Stores a value serialized as JSON in browser storage.
+**What:** Stores a value serialized as JSON in localStorage.
 
 **When:** Persisting user preferences, theme settings, cached API data, form drafts, authentication tokens.
 
@@ -37,51 +41,48 @@ setItem<T>(storage: 'local' | 'session', key: string, value: T): void
 
 **Example:**
 ```typescript
-import { setItem, getItem } from 'js-util-kit';
+import { setLocalStorage, getLocalStorage } from 'js-util-kit';
 
 // Store primitives
-setItem('local', 'theme', 'dark');
-setItem('local', 'fontSize', 14);
-setItem('local', 'notificationsEnabled', true);
+setLocalStorage('theme', 'dark');
+setLocalStorage('fontSize', 14);
+setLocalStorage('notificationsEnabled', true);
 
 // Store objects (auto-serialized)
-setItem('local', 'userPrefs', {
+setLocalStorage('userPrefs', {
   theme: 'dark',
   fontSize: 14,
   recentFiles: ['file1.ts', 'file2.ts'],
 });
 
 // Store arrays
-setItem('local', 'recentSearches', ['react', 'typescript', 'utils']);
-
-// Use sessionStorage instead of localStorage
-setItem('session', 'tempToken', 'eyJhbGciOiJIUzI1NiJ9...');
+setLocalStorage('recentSearches', ['react', 'typescript', 'utils']);
 ```
 
-**Error Handling:** If `localStorage` is full (quota exceeded), the function silently catches the error.
+**Error Handling:** If `localStorage` is full (quota exceeded), the function returns `false` instead of throwing.
 
 ---
 
-### `getItem`
+### `getLocalStorage`
 
 ```typescript
-getItem<T>(storage: 'local' | 'session', key: string, fallback?: T): T
+getLocalStorage<T>(key: string): T | null
 ```
 
-**What:** Retrieves and parses JSON from browser storage.
+**What:** Retrieves and parses JSON from localStorage.
 
 **When:** Reading user settings, cached data, or any previously stored value.
 
-**Why:** Automatic JSON parsing with a typed generic and fallback support.
+**Why:** Automatic JSON parsing with a typed generic.
 
 **Example:**
 ```typescript
-import { getItem } from 'js-util-kit';
+import { getLocalStorage } from 'js-util-kit';
 
 // Retrieve primitives
-const theme: string = getItem('local', 'theme', 'light');
-const fontSize: number = getItem('local', 'fontSize', 16);
-const notificationsOn: boolean = getItem('local', 'notificationsEnabled', true);
+const theme: string | null = getLocalStorage('theme');
+const fontSize: number | null = getLocalStorage('fontSize');
+const notificationsOn: boolean | null = getLocalStorage('notificationsEnabled');
 
 // Retrieve objects with full type safety
 interface UserPrefs {
@@ -90,79 +91,148 @@ interface UserPrefs {
   recentFiles: string[];
 }
 
-const prefs: UserPrefs = getItem('local', 'userPrefs', {
-  theme: 'light',
-  fontSize: 16,
-  recentFiles: [],
-});
+const prefs: UserPrefs | null = getLocalStorage('userPrefs');
 
 // Retrieve arrays
-const searches: string[] = getItem('local', 'recentSearches', []);
-
-// Fallback when key doesn't exist
-const lang: string = getItem('local', 'language', 'en');
+const searches: string[] | null = getLocalStorage('recentSearches');
 ```
 
-**Fallback:** If the key doesn't exist or the stored JSON is corrupted/invalid, returns the `fallback` value. If no fallback is provided, returns `undefined`.
+**Fallback:** If the key doesn't exist or the stored JSON is corrupted/invalid, returns `null`.
 
 ---
 
-### `removeItem`
+### `removeLocalStorage`
 
 ```typescript
-removeItem(storage: 'local' | 'session', key: string): void
+removeLocalStorage(key: string): boolean
 ```
 
-**What:** Removes a single key from browser storage.
+**What:** Removes a single key from localStorage.
 
 **When:** User logout (remove token), preferences reset, cleaning stale cache keys.
 
 **Example:**
 ```typescript
-import { removeItem } from 'js-util-kit';
+import { removeLocalStorage } from 'js-util-kit';
 
 // Remove a single key
-removeItem('local', 'theme');
-removeItem('session', 'tempToken');
+removeLocalStorage('theme');
+removeLocalStorage('fontSize');
 
 // Bulk removal
 ['theme', 'fontSize', 'token'].forEach(key => {
-  removeItem('local', key);
+  removeLocalStorage(key);
 });
 ```
 
 ---
 
-### `clearItems`
+### `clearLocalStorage`
 
 ```typescript
-clearItems(storage: 'local' | 'session'): void
+clearLocalStorage(prefix?: string): boolean
 ```
 
-**What:** Clears all keys from `localStorage` or `sessionStorage`.
+**What:** Clears keys from localStorage by prefix. When `prefix` is omitted, empty string, or null, clears all localStorage entries.
 
 **When:** User account deletion, factory reset, testing/cleanup.
 
 **Example:**
 ```typescript
-import { clearItems } from 'js-util-kit';
+import { clearLocalStorage } from 'js-util-kit';
 
 // Clear all user data on logout
 function logout(): void {
-  clearItems('local');
-  clearItems('session');
+  clearLocalStorage();
 }
+
+// Clear only app-specific keys
+clearLocalStorage('app:');
 ```
 
-**Warning:** `clearItems` removes ALL keys with no undo. Use `removeItem` for targeted removal.
+**Warning:** `clearLocalStorage()` without prefix removes ALL keys with no undo. Use `removeLocalStorage` for targeted removal.
+
+---
+
+### `setSessionStorage`
+
+```typescript
+setSessionStorage<T>(key: string, value: T): boolean
+```
+
+**What:** Stores a value serialized as JSON in sessionStorage.
+
+**When:** Temporary data that should not persist across browser sessions (tab/window close), like form drafts, temporary tokens, or wizard state.
+
+**Example:**
+```typescript
+import { setSessionStorage, getSessionStorage } from 'js-util-kit';
+
+// Store temporary data
+setSessionStorage('tempToken', 'eyJhbGciOiJIUzI1NiJ9...');
+setSessionStorage('formDraft', { step: 2, data: { name: 'John' } });
+```
+
+---
+
+### `getSessionStorage`
+
+```typescript
+getSessionStorage<T>(key: string): T | null
+```
+
+**What:** Retrieves and parses JSON from sessionStorage.
+
+**Example:**
+```typescript
+import { getSessionStorage } from 'js-util-kit';
+
+const token: string | null = getSessionStorage('tempToken');
+const draft: { step: number; data: object } | null = getSessionStorage('formDraft');
+```
+
+---
+
+### `removeSessionStorage`
+
+```typescript
+removeSessionStorage(key: string): boolean
+```
+
+**What:** Removes a single key from sessionStorage.
+
+**Example:**
+```typescript
+import { removeSessionStorage } from 'js-util-kit';
+
+removeSessionStorage('tempToken');
+```
+
+---
+
+### `clearSessionStorage`
+
+```typescript
+clearSessionStorage(prefix?: string): boolean
+```
+
+**What:** Clears keys from sessionStorage by prefix. When `prefix` is omitted, empty string, or null, clears all sessionStorage entries.
+
+**Example:**
+```typescript
+import { clearSessionStorage } from 'js-util-kit';
+
+clearSessionStorage(); // Clear all
+clearSessionStorage('wizard:'); // Clear wizard-specific keys
+```
 
 ---
 
 ## Common Patterns
 
-### User Preferences
+### User Preferences (localStorage)
 ```typescript
-import { setItem, getItem } from 'js-util-kit';
+import { setLocalStorage, getLocalStorage } from 'js-util-kit';
 
 interface AppSettings {
   theme: 'light' | 'dark';
@@ -173,38 +243,38 @@ interface AppSettings {
 
 const DEFAULTS: AppSettings = { theme: 'light', fontSize: 16, language: 'en', soundEnabled: true };
 
-function getSettings(): AppSettings {
-  return getItem('local', 'settings', DEFAULTS);
+function getSettings(): AppSettings | null {
+  return getLocalStorage('settings');
 }
 
-function saveSettings(settings: Partial<AppSettings>): void {
+function saveSettings(settings: Partial<AppSettings>): boolean {
   const current = getSettings();
-  setItem('local', 'settings', { ...current, ...settings });
+  return setLocalStorage('settings', { ...DEFAULTS, ...current, ...settings });
 }
 ```
 
-### Authentication Token
+### Authentication Token (sessionStorage)
 ```typescript
-import { setItem, getItem, removeItem } from 'js-util-kit';
+import { setSessionStorage, getSessionStorage, removeSessionStorage } from 'js-util-kit';
 
 const TOKEN_KEY = 'auth_token';
 
-function storeToken(token: string): void {
-  setItem('session', TOKEN_KEY, token);
+function storeToken(token: string): boolean {
+  return setSessionStorage(TOKEN_KEY, token);
 }
 
-function getToken(): string | undefined {
-  return getItem('session', TOKEN_KEY);
+function getToken(): string | null {
+  return getSessionStorage(TOKEN_KEY);
 }
 
-function clearToken(): void {
-  removeItem('session', TOKEN_KEY);
+function clearToken(): boolean {
+  return removeSessionStorage(TOKEN_KEY);
 }
 ```
 
-### Cached API Data with TTL
+### Cached API Data with TTL (localStorage)
 ```typescript
-import { setItem, getItem, removeItem } from 'js-util-kit';
+import { setLocalStorage, getLocalStorage, removeLocalStorage } from 'js-util-kit';
 
 interface CacheEntry<T> {
   data: T;
@@ -213,17 +283,17 @@ interface CacheEntry<T> {
 }
 
 function getCached<T>(key: string, ttlMs = 300000): T | null {
-  const entry = getItem<CacheEntry<T>>('local', key);
+  const entry = getLocalStorage<CacheEntry<T>>(key);
   if (!entry) return null;
   if (Date.now() - entry.timestamp > entry.ttl) {
-    removeItem('local', key);
+    removeLocalStorage(key);
     return null;
   }
   return entry.data;
 }
 
-function setCached<T>(key: string, data: T, ttlMs = 300000): void {
-  setItem('local', key, { data, timestamp: Date.now(), ttl: ttlMs });
+function setCached<T>(key: string, data: T, ttlMs = 300000): boolean {
+  return setLocalStorage(key, { data, timestamp: Date.now(), ttl: ttlMs });
 }
 ```
 
@@ -233,7 +303,11 @@ function setCached<T>(key: string, data: T, ttlMs = 300000): void {
 
 | Function | Browser | Node.js |
 |----------|---------|---------|
-| `setItem` | Yes | No |
-| `getItem` | Yes | No |
-| `removeItem` | Yes | No |
-| `clearItems` | Yes | No |
+| `setLocalStorage` | Yes | No |
+| `getLocalStorage` | Yes | No |
+| `removeLocalStorage` | Yes | No |
+| `clearLocalStorage` | Yes | No |
+| `setSessionStorage` | Yes | No |
+| `getSessionStorage` | Yes | No |
+| `removeSessionStorage` | Yes | No |
+| `clearSessionStorage` | Yes | No |

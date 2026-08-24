@@ -1,21 +1,21 @@
-import { _getLocalStorage } from './_helpers.js';
+import { _getSessionStorage } from './_helpers.js';
 
 /**
- * Reads and deserializes a value from local storage.
+ * Reads and deserializes a value from session storage.
  *
- * Returns `null` instead of throwing when local storage is unavailable, the key
+ * Returns `null` instead of throwing when session storage is unavailable, the key
  * does not exist, or parsing fails.
  *
  * @param key - The storage key. Returns `null` for null, undefined, or empty keys.
  * @returns The parsed value as `T`, or `null` when unavailable, missing, or invalid.
  *
  * @example
- * getLocalStorage<{ theme: string }>('settings'); // => { theme: 'dark' } | null
+ * getSessionStorage<{ token: string }>('auth'); // => { token: '...' } | null
  */
-export function getLocalStorage<T>(key: string | null | undefined): T | null {
+export function getSessionStorage<T>(key: string | null | undefined): T | null {
     if (typeof key !== 'string' || key.length === 0) return null;
 
-    const storage = _getLocalStorage();
+    const storage = _getSessionStorage();
     if (storage == null) return null;
 
     let rawValue: string | null;

@@ -1,10 +1,10 @@
-import { _getLocalStorage } from './_helpers.js';
+import { _getSessionStorage } from './_helpers.js';
 
 /**
- * Stores a value in local storage under the provided key.
+ * Stores a value in session storage under the provided key.
  *
  * The value is serialized with `JSON.stringify` before being written.
- * Returns `false` instead of throwing when local storage is unavailable or
+ * Returns `false` instead of throwing when session storage is unavailable or
  * the write fails (for example quota errors).
  *
  * @param key - The storage key. Returns `false` for null, undefined, or empty keys.
@@ -12,12 +12,12 @@ import { _getLocalStorage } from './_helpers.js';
  * @returns `true` when the value is stored successfully; otherwise `false`.
  *
  * @example
- * setLocalStorage('settings', { theme: 'dark' }); // => true
+ * setSessionStorage('tempToken', 'eyJhbGciOiJIUzI1NiJ9...'); // => true
  */
-export function setLocalStorage(key: string | null | undefined, value: unknown): boolean {
+export function setSessionStorage(key: string | null | undefined, value: unknown): boolean {
     if (typeof key !== 'string' || key.length === 0) return false;
 
-    const storage = _getLocalStorage();
+    const storage = _getSessionStorage();
     if (storage == null) return false;
 
     try {

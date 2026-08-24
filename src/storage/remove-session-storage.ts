@@ -1,21 +1,21 @@
-import { _getLocalStorage } from './_helpers.js';
+import { _getSessionStorage } from './_helpers.js';
 
 /**
- * Removes a key from local storage.
+ * Removes a key from session storage.
  *
- * This is a no-op for missing keys and returns `false` only when local storage
+ * This is a no-op for missing keys and returns `false` only when session storage
  * is unavailable or the remove operation fails.
  *
  * @param key - The storage key to remove. Returns `false` for null, undefined, or empty keys.
  * @returns `true` when removal is completed (including missing keys); otherwise `false`.
  *
  * @example
- * removeLocalStorage('settings'); // => true
+ * removeSessionStorage('tempToken'); // => true
  */
-export function removeLocalStorage(key: string | null | undefined): boolean {
+export function removeSessionStorage(key: string | null | undefined): boolean {
     if (typeof key !== 'string' || key.length === 0) return false;
 
-    const storage = _getLocalStorage();
+    const storage = _getSessionStorage();
     if (storage == null) return false;
 
     try {

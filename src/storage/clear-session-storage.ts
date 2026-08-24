@@ -1,19 +1,19 @@
-import { _getLocalStorage, _shouldClearAll } from './_helpers.js';
+import { _getSessionStorage, _shouldClearAll } from './_helpers.js';
 
 /**
- * Clears keys from local storage by prefix.
+ * Clears keys from session storage by prefix.
  *
  * When `prefix` is omitted, null, undefined, or an empty string, this clears
- * all local-storage entries. This operation is destructive.
+ * all session-storage entries. This operation is destructive.
  *
  * @param prefix - Optional key prefix used to select keys for removal.
  * @returns `true` when the clear operation succeeds; otherwise `false`.
  *
  * @example
- * clearLocalStorage('app:'); // => true
+ * clearSessionStorage('temp:'); // => true
  */
-export function clearLocalStorage(prefix?: string | null): boolean {
-    const storage = _getLocalStorage();
+export function clearSessionStorage(prefix?: string | null): boolean {
+    const storage = _getSessionStorage();
     if (storage == null) return false;
 
     try {
