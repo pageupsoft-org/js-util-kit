@@ -4,25 +4,25 @@ Comprehensive guide for `js-util-kit` auth utilities (JWT handling, API keys, pa
 
 ## Overview
 
-The auth module provides utilities for secure token generation, password hashing, JWT decoding, and verification. Works in both browser and Node.js.
+The auth module provides utilities for secure token generation, password hashing, JWT decoding, and verification. Works in environments that provide the required cryptographic APIs.
 
 ## Exports
 
-| Function | Description | Use Case |
-|----------|-------------|----------|
-| `generateApiKey` | Generate secure API key | Server-to-server auth |
-| `hashPassword` | Hash password with PBKDF2 | User registration |
-| `verifyPassword` | Verify password against hash | User login |
-| `generateToken` | Generate JWT-like token | Session tokens |
-| `verifyToken` | Verify token signature and expiry | Auth middleware |
-| `decodeJwt` | Decode JWT payload without verification | Client-side token inspection |
-| `isTokenExpired` | Check if JWT is expired | Token validation |
+| Function         | Description                             | Use Case                     |
+| ---------------- | --------------------------------------- | ---------------------------- |
+| `generateApiKey` | Generate secure API key                 | Server-to-server auth        |
+| `hashPassword`   | Hash password with PBKDF2               | User registration            |
+| `verifyPassword` | Verify password against hash            | User login                   |
+| `generateToken`  | Generate JWT-like token                 | Session tokens               |
+| `verifyToken`    | Verify token signature and expiry       | Auth middleware              |
+| `decodeJwt`      | Decode JWT payload without verification | Client-side token inspection |
+| `isTokenExpired` | Check if JWT is expired                 | Token validation             |
 
 ---
 
 ## Prerequisites
 
-🌐 **Universal** — works in both browser and Node.js.
+🌐 **Universal** — auth utilities can be used in browser and server environments when the required cryptographic APIs are available.
 
 ---
 
@@ -41,19 +41,23 @@ generateApiKey(prefix?: string): string
 **Why:** Uses Web Crypto API / Node `crypto.randomBytes` — not predictable like `Math.random()`.
 
 **Example:**
+
 ```typescript
 import { generateApiKey } from 'js-util-kit';
 
 // Default key
 generateApiKey();
+
 // 'ak_live_a1b2c3d4e5f6...' (with prefix)
 
 // Custom prefix
 generateApiKey('sk');
+
 // 'sk_live_a1b2c3d4e5f6...'
 
 // No prefix
 generateApiKey('');
+
 // 'a1b2c3d4e5f6...' (raw key)
 
 // Batch create keys for multiple users
@@ -77,6 +81,7 @@ hashPassword(password: string): Promise<string>
 **Why:** PBKDF2 is a standard key derivation function — slow by design, resistant to brute force. No external dependencies.
 
 **Example:**
+
 ```typescript
 import { hashPassword, verifyPassword } from 'js-util-kit';
 
@@ -85,14 +90,18 @@ async function registerUser(email: string, password: string): Promise<void> {
   if (password.length < 8) {
     throw new Error('Password must be at least 8 characters');
   }
+
   const hash = await hashPassword(password);
+
   // Store: { email, passwordHash: hash }
 }
 
 // Login
 async function loginUser(email: string, password: string): Promise<boolean> {
   const user = await db.findUser(email);
+
   if (!user) return false;
+
   return verifyPassword(password, user.passwordHash);
 }
 ```
@@ -114,10 +123,12 @@ verifyPassword(password: string, hash: string): Promise<boolean>
 **Why:** Constant-time comparison prevents timing attacks.
 
 **Example:**
+
 ```typescript
 import { verifyPassword } from 'js-util-kit';
 
 const isValid = await verifyPassword('userPassword123', 'v=1$i=100000$...');
+
 // true or false
 ```
 
@@ -128,7 +139,11 @@ const isValid = await verifyPassword('userPassword123', 'v=1$i=100000$...');
 ### `generateToken`
 
 ```typescript
-generateToken(payload: Record<string, unknown>, secret: string, expiresIn?: string): Promise<string>
+generateToken(
+  payload: Record<string, unknown>,
+  secret: string,
+  expiresIn?: string
+): Promise<string>
 ```
 
 **What:** Generates a JWT-like signed token with expiration using HS256.
@@ -138,6 +153,7 @@ generateToken(payload: Record<string, unknown>, secret: string, expiresIn?: stri
 **Why:** Self-contained tokens with expiry — no server-side session storage needed.
 
 **Example:**
+
 ```typescript
 import { generateToken, verifyToken } from 'js-util-kit';
 
@@ -147,6 +163,7 @@ const token = await generateToken(
   'my-secret-key',
   '24h'
 );
+
 // 'eyJhbGciOiJIUzI1NiJ9...'
 
 // Verification token (expires in 1 hour)
@@ -164,7 +181,10 @@ const verifyToken = await generateToken(
 ### `verifyToken`
 
 ```typescript
-verifyToken(token: string, secret: string): Promise<Record<string, unknown> | null>
+verifyToken(
+  token: string,
+  secret: string
+): Promise<Record<string, unknown> | null>
 ```
 
 **What:** Verifies a token's signature and checks expiry. Returns payload if valid.
@@ -174,10 +194,15 @@ verifyToken(token: string, secret: string): Promise<Record<string, unknown> | nu
 **Why:** Validates token integrity and expiration in one call.
 
 **Example:**
+
 ```typescript
 import { verifyToken } from 'js-util-kit';
 
-async function authMiddleware(req: Request, res: Response, next: NextFunction): Promise<void> {
+async function authMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
   const authHeader = req.headers.authorization;
   const token = authHeader?.replace('Bearer ', '');
 
@@ -194,7 +219,11 @@ async function authMiddleware(req: Request, res: Response, next: NextFunction): 
   }
 
   // Attach user info to request
-  req.user = { id: payload.userId as string, role: payload.role as string };
+  req.user = {
+    id: payload.userId as string,
+    role: payload.role as string
+  };
+
   next();
 }
 ```
@@ -206,7 +235,9 @@ async function authMiddleware(req: Request, res: Response, next: NextFunction): 
 ### `decodeJwt`
 
 ```typescript
-decodeJwt(token: string | null | undefined): Record<string, unknown> | null
+decodeJwt(
+  token: string | null | undefined
+): Record<string, unknown> | null
 ```
 
 **What:** Decodes a JWT payload without verifying its signature.
@@ -216,10 +247,14 @@ decodeJwt(token: string | null | undefined): Record<string, unknown> | null
 **When:** Client-side token inspection, extracting user info from token for UI display.
 
 **Example:**
+
 ```typescript
 import { decodeJwt } from 'js-util-kit';
 
-decodeJwt('eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.signature'); // => { sub: '123' }
+decodeJwt(
+  'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.signature'
+); // => { sub: '123' }
+
 decodeJwt(null); // null
 ```
 
@@ -228,7 +263,10 @@ decodeJwt(null); // null
 ### `isTokenExpired`
 
 ```typescript
-isTokenExpired(token: string | null | undefined, clockSkewSeconds?: number): boolean
+isTokenExpired(
+  token: string | null | undefined,
+  clockSkewSeconds?: number
+): boolean
 ```
 
 **What:** Returns whether a JWT should be treated as expired by checking the `exp` claim.
@@ -238,11 +276,16 @@ isTokenExpired(token: string | null | undefined, clockSkewSeconds?: number): boo
 **Why:** Fail-safe behavior — malformed tokens, missing/invalid `exp`, or uncertain cases are treated as expired.
 
 **Example:**
+
 ```typescript
 import { isTokenExpired } from 'js-util-kit';
 
-isTokenExpired('eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjQxMDAwMDAwMDB9.signature'); // => false
+isTokenExpired(
+  'eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjQxMDAwMDAwMDB9.signature'
+); // => false
+
 isTokenExpired(expiredToken); // => true
+
 isTokenExpired(null); // => true
 ```
 
@@ -253,11 +296,19 @@ isTokenExpired(null); // => true
 ## Common Patterns
 
 ### Complete Registration Flow
+
 ```typescript
-import { hashPassword, generateToken, verifyToken } from 'js-util-kit';
+import {
+  hashPassword,
+  generateToken,
+  verifyToken
+} from 'js-util-kit';
 
 class AuthService {
-  async register(email: string, password: string): Promise<{ userId: string; token: string }> {
+  async register(
+    email: string,
+    password: string
+  ): Promise<{ userId: string; token: string }> {
     // 1. Hash password
     const passwordHash = await hashPassword(password);
 
@@ -274,13 +325,18 @@ class AuthService {
     return { userId: user.id, token };
   }
 
-  async login(email: string, password: string): Promise<{ token: string }> {
+  async login(
+    email: string,
+    password: string
+  ): Promise<{ token: string }> {
     // 1. Find user
     const user = await this.db.findUser(email);
+
     if (!user) throw new Error('Invalid credentials');
 
     // 2. Verify password
     const valid = await verifyPassword(password, user.passwordHash);
+
     if (!valid) throw new Error('Invalid credentials');
 
     // 3. Generate token
@@ -293,8 +349,14 @@ class AuthService {
     return { token };
   }
 
-  async refreshSession(token: string): Promise<{ newToken: string }> {
-    const payload = await verifyToken(token, process.env.JWT_SECRET!);
+  async refreshSession(
+    token: string
+  ): Promise<{ newToken: string }> {
+    const payload = await verifyToken(
+      token,
+      process.env.JWT_SECRET!
+    );
+
     if (!payload) throw new Error('Invalid token');
 
     return {
@@ -302,39 +364,64 @@ class AuthService {
         payload as Record<string, unknown>,
         process.env.JWT_SECRET!,
         '7d'
-      ),
+      )
     };
   }
 }
 ```
 
 ### Password Reset Flow
+
 ```typescript
-import { generateToken, verifyToken, hashPassword } from 'js-util-kit';
+import {
+  generateToken,
+  verifyToken,
+  hashPassword
+} from 'js-util-kit';
 
 async function requestPasswordReset(email: string): Promise<void> {
   const user = await db.findUser(email);
+
   if (!user) return; // Don't reveal if email exists
 
   // Generate reset token (expires in 1 hour)
   const resetToken = await generateToken(
-    { userId: user.id, action: 'reset-password', email },
+    {
+      userId: user.id,
+      action: 'reset-password',
+      email
+    },
     process.env.RESET_SECRET!,
     '1h'
   );
 
   // Send email with reset link
-  await sendEmail(email, 'Password Reset', `Reset link: /reset?token=${resetToken}`);
+  await sendEmail(
+    email,
+    'Password Reset',
+    `Reset link: /reset?token=${resetToken}`
+  );
 }
 
-async function resetPassword(token: string, newPassword: string): Promise<void> {
-  const payload = await verifyToken(token, process.env.RESET_SECRET!);
+async function resetPassword(
+  token: string,
+  newPassword: string
+): Promise<void> {
+  const payload = await verifyToken(
+    token,
+    process.env.RESET_SECRET!
+  );
+
   if (!payload || payload.action !== 'reset-password') {
     throw new Error('Invalid or expired reset token');
   }
 
   const hash = await hashPassword(newPassword);
-  await db.updateUserPassword(payload.userId as string, hash);
+
+  await db.updateUserPassword(
+    payload.userId as string,
+    hash
+  );
 }
 ```
 
@@ -342,15 +429,17 @@ async function resetPassword(token: string, newPassword: string): Promise<void> 
 
 ## Environment Compatibility
 
-| Function | Browser | Node.js | React Native | Dependencies |
-|----------|---------|---------|--------------|--------------|
-| `generateApiKey` | Yes | Yes (v15+) | Requires polyfill | Web Crypto API |
-| `hashPassword` | Yes | Yes (v15+) | Requires polyfill | Web Crypto API |
-| `verifyPassword` | Yes | Yes (v15+) | Requires polyfill | Web Crypto API |
-| `generateToken` | Yes | Yes (v15+) | Requires polyfill | Web Crypto API |
-| `verifyToken` | Yes | Yes (v15+) | Requires polyfill | Web Crypto API |
-| `decodeJwt` | Yes | Yes | Yes | None |
-| `isTokenExpired` | Yes | Yes | Yes | None |
+Auth utilities can be used in environments that provide the required cryptographic capabilities.
+
+| Function         | Browser | Node.js | React Native                       | Requirements   |
+| ---------------- | ------- | ------- | ---------------------------------- | -------------- |
+| `generateApiKey` | Yes     | Yes     | Requires compatible implementation | Web Crypto API |
+| `hashPassword`   | Yes     | Yes     | Requires compatible implementation | Web Crypto API |
+| `verifyPassword` | Yes     | Yes     | Requires compatible implementation | Web Crypto API |
+| `generateToken`  | Yes     | Yes     | Requires compatible implementation | Web Crypto API |
+| `verifyToken`    | Yes     | Yes     | Requires compatible implementation | Web Crypto API |
+| `decodeJwt`      | Yes     | Yes     | Yes                                | None           |
+| `isTokenExpired` | Yes     | Yes     | Yes                                | None           |
 
 All functions are **pure** and have **zero external dependencies**.
 
@@ -358,17 +447,24 @@ All functions are **pure** and have **zero external dependencies**.
 
 ## React Native Compatibility
 
-### Prerequisites
+Most auth utilities require cryptographic APIs that are not available in React Native by default.
 
-Auth utilities require the Web Crypto API, which is not available in React Native by default. You must install a polyfill:
+When using auth utilities in React Native:
 
-#### Option 1: Expo
+* Provide a compatible crypto implementation or polyfill.
+* Load the required polyfill before importing or using the affected utilities.
+* Verify that any additional APIs required by the utilities are available in the React Native environment.
+* For simpler setups, authentication and cryptographic operations can be handled by the backend.
+
+### React Native Setup
+
+#### Expo
 
 ```bash
 npx expo install expo-crypto
 ```
 
-#### Option 2: React Native CLI
+#### React Native CLI
 
 ```bash
 npm install react-native-quick-crypto
@@ -377,24 +473,39 @@ npm install react-native-get-random-values
 
 ### Setup
 
-Import the polyfill **before** any auth utilities:
+Import the polyfill **before** using the affected auth utilities:
 
 ```typescript
-// index.js or App.tsx (must be at the very top)
+// index.js or App.tsx
+
 import 'react-native-get-random-values';
 
 // Now you can use auth utilities
-import { generateApiKey, hashPassword } from 'js-util-kit';
+import {
+  generateApiKey,
+  hashPassword
+} from 'js-util-kit';
 ```
 
 ### Example: React Native Login
 
 ```typescript
 // App.tsx
-import 'react-native-get-random-values'; // Must be first!
+
+import 'react-native-get-random-values';
+
 import React, { useState } from 'react';
-import { View, TextInput, Button, Text } from 'react-native';
-import { hashPassword, verifyPassword } from 'js-util-kit';
+import {
+  View,
+  TextInput,
+  Button,
+  Text
+} from 'react-native';
+
+import {
+  hashPassword,
+  verifyPassword
+} from 'js-util-kit';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -405,15 +516,18 @@ export default function LoginScreen() {
     try {
       // In a real app, fetch user from backend
       const user = await fetchUser(email);
-      
+
       // Verify password
-      const isValid = await verifyPassword(password, user.passwordHash);
-      
+      const isValid = await verifyPassword(
+        password,
+        user.passwordHash
+      );
+
       if (!isValid) {
         setError('Invalid credentials');
         return;
       }
-      
+
       // Navigate to home
       navigation.navigate('Home');
     } catch (err) {
@@ -423,9 +537,24 @@ export default function LoginScreen() {
 
   return (
     <View>
-      <TextInput value={email} onChangeText={setEmail} placeholder="Email" />
-      <TextInput value={password} onChangeText={setPassword} secureTextEntry placeholder="Password" />
-      <Button title="Login" onPress={handleLogin} />
+      <TextInput
+        value={email}
+        onChangeText={setEmail}
+        placeholder="Email"
+      />
+
+      <TextInput
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+        placeholder="Password"
+      />
+
+      <Button
+        title="Login"
+        onPress={handleLogin}
+      />
+
       {error && <Text>{error}</Text>}
     </View>
   );
@@ -436,14 +565,19 @@ export default function LoginScreen() {
 
 **Error: "Crypto API not available"**
 
-This means the polyfill wasn't loaded. Check:
-1. Polyfill import is **first** in your entry file (index.js or App.tsx)
-2. Polyfill package is installed: `npm ls react-native-get-random-values`
-3. Metro bundler was restarted after installing polyfill
+This usually means the required crypto implementation was not loaded.
+
+Check that:
+
+1. The required polyfill is imported before the affected auth utilities are used.
+2. The required polyfill package is installed.
+3. The Metro bundler was restarted after installing the polyfill.
 
 **Error: "btoa is not defined" or "atob is not defined"**
 
-Some older React Native versions don't include base64 functions. Install:
+Some React Native environments may not provide base64 functions.
+
+Install a compatible base64 implementation:
 
 ```bash
 npm install base-64
@@ -453,6 +587,7 @@ Then polyfill globally:
 
 ```typescript
 // index.js
+
 import { encode, decode } from 'base-64';
 
 if (!global.btoa) {
@@ -466,21 +601,33 @@ if (!global.atob) {
 
 ### Alternative: Backend-Only Auth
 
-For simpler React Native integration, handle all auth operations on the backend:
+For simpler React Native integration, handle cryptographic authentication operations on the backend:
 
 ```typescript
 // React Native - only JWT decoding (no crypto needed)
-import { decodeJwt, isTokenExpired } from 'js-util-kit';
+
+import {
+  decodeJwt,
+  isTokenExpired
+} from 'js-util-kit';
 
 // Get token from backend
-const response = await fetch('https://api.example.com/login', {
-  method: 'POST',
-  body: JSON.stringify({ email, password }),
-});
+const response = await fetch(
+  'https://api.example.com/login',
+  {
+    method: 'POST',
+    body: JSON.stringify({
+      email,
+      password
+    })
+  }
+);
+
 const { token } = await response.json();
 
 // Decode for UI display (doesn't require crypto)
 const payload = decodeJwt(token);
+
 console.log(`User ID: ${payload?.userId}`);
 
 // Check expiry client-side
@@ -491,43 +638,12 @@ if (isTokenExpired(token)) {
 
 ---
 
-## Node.js Version Compatibility
+## Platform Considerations
 
-**Minimum Version**: Node.js **v15.0.0**
+When using auth utilities in a new or unsupported environment:
 
-Auth utilities use the Web Crypto API (`crypto.subtle`), which was added in Node.js v15.
-
-### For Node.js <v15
-
-Install a polyfill:
-
-```bash
-npm install @peculiar/webcrypto
-```
-
-Setup:
-
-```typescript
-// server.ts (top of file)
-import { Crypto } from '@peculiar/webcrypto';
-
-if (!globalThis.crypto) {
-  globalThis.crypto = new Crypto();
-}
-
-// Now auth utilities will work
-import { generateApiKey } from 'js-util-kit';
-```
-
----
-
-## Browser Compatibility
-
-All auth utilities work in modern browsers:
-
-- ✅ Chrome 60+
-- ✅ Firefox 57+
-- ✅ Safari 11+
-- ✅ Edge 79+
-
-Older browsers (IE11, Safari <11) do not support Web Crypto API and are not supported.
+* Check whether the environment provides the required Web Crypto or cryptographic APIs.
+* If the required APIs are unavailable, provide a compatible implementation or polyfill.
+* Avoid assuming browser and server environments expose the same APIs.
+* For mobile or restricted environments, consider performing cryptographic authentication operations on the backend.
+* Validate the environment before relying on platform-specific APIs.
