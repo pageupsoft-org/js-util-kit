@@ -1124,6 +1124,37 @@ describe('createHttpLogSink', () => {
         await sink.shutdown();
     });
 
+    it('falls back to a default correlation id instead of rejecting flush() when correlationIdFactory throws', async () => {
+        const requestHeaders: Array<Record<string, string> | undefined> = [];
+
+        const sink = createHttpLogSink({
+            url: 'https://logs.example.com/events',
+            batchSize: 10,
+            correlationIdFactory: () => {
+                throw new Error('factory exploded');
+            },
+            fetchLike: async (_url, init) => {
+                requestHeaders.push(init.headers);
+                return { ok: true, status: 200 };
+            },
+        });
+
+        sink.emit({
+            timestamp: '2026-01-01T00:00:00.000Z',
+            level: 'info',
+            message: 'still logs',
+        });
+
+        await expect(sink.flush()).resolves.toBeUndefined();
+
+        expect(requestHeaders).toHaveLength(1);
+        expect(requestHeaders[0]?.['x-log-correlation-id']).toEqual(
+            expect.stringMatching(/^[0-9a-z]+-[0-9a-z]+$/)
+        );
+
+        await expect(sink.shutdown()).resolves.toBeUndefined();
+    });
+
     it('supports pluggable trace metadata in serialization context and payload', async () => {
         const seenContexts: Array<{ correlationId: string; traceMetadata: Record<string, unknown> | undefined }> = [];
         const bodies: Array<Record<string, unknown>> = [];

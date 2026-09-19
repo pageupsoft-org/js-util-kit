@@ -281,11 +281,13 @@ isNumeric(new Number(42));               // false
 randomNumber(min: number, max: number, options?: { inclusive?: boolean }): number
 ```
 
-**What:** Generates a cryptographically random number in `[min, max]`.
+**What:** Generates a pseudo-random number in `[min, max]` using `Math.random()`.
 
 **When:** Random sampling, demo data, games, A/B test assignment.
 
-**Why:** `Math.random()` is not cryptographically secure.
+**Why:** Convenient bounded random number generation for non-security use cases.
+
+**Security:** Uses `Math.random()` and is **not** cryptographically secure. Do not use for tokens, passwords, or any security-sensitive randomness — use `generateUuid` (Web Crypto-based) instead.
 
 **Example:**
 ```typescript
@@ -400,4 +402,4 @@ renderProgressBar(0, 10);     // '[░░░░░░░░░░░░] 0%'
 | `formatPercentage` | ✅ | ✅ | None |
 | `calculatePercentage` | ✅ | ✅ | None |
 | `isNumeric` | ✅ | ✅ | None |
-| `randomNumber` | ✅ | ✅ | Web Crypto / Node crypto |
+| `randomNumber` | ✅ | ✅ | None (`Math.random()`, not cryptographically secure) |

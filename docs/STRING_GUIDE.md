@@ -21,7 +21,7 @@ npm install js-util-kit
 | `removeSpecialCharacters` | Remove non-alphanumeric | Slugs, IDs |
 | `removeExtraWhitespaces` | Normalize whitespace | User input |
 | `isNullOrWhitespace` | Check empty/whitespace | Validation |
-| `generateRandomString` | Crypto-secure random string | Tokens, IDs |
+| `generateRandomString` | Random string (not crypto-secure) | Test data, non-secret IDs |
 
 ---
 
@@ -305,11 +305,11 @@ isNullOrWhitespace('  hello  ');     // false
 generateRandomString(length: number, charset?: string): string
 ```
 
-**What:** Cryptographically secure random string (uses `crypto.getRandomValues`).
+**What:** Generates a random string using `Math.random()`.
 
-**When:** API keys, session IDs, CSRF tokens, temporary passwords, unique IDs.
+**When:** Test fixtures, mock data, non-secret display IDs, sampling. For API keys, session IDs, CSRF tokens, or passwords, use `generateUuid` (Web Crypto-based) instead.
 
-**Why:** `Math.random()` is predictable; this uses Web Crypto API / Node crypto.
+**Why:** Convenient random-string generation with a configurable charset for non-security use cases.
 
 **Example:**
 ```typescript
@@ -329,7 +329,7 @@ generateRandomString(43, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01
 // Repeatable for testing (seed not supported - use jest mock)
 ```
 
-**Security:** Uses `crypto.getRandomValues()` (browser) or `crypto.randomBytes()` (Node). Suitable for secrets.
+**Security:** Uses `Math.random()` and is **not** cryptographically secure. Do not use for passwords, tokens, session IDs, or any other secret — use `generateUuid` instead.
 
 ---
 
@@ -413,6 +413,6 @@ function processUpload(file: File): { safeName: string } | { error: string } {
 | `removeSpecialCharacters` | ✅ | ✅ | None |
 | `removeExtraWhitespaces` | ✅ | ✅ | None |
 | `isNullOrWhitespace` | ✅ | ✅ | None |
-| `generateRandomString` | ✅ | ✅ | Web Crypto / Node crypto |
+| `generateRandomString` | ✅ | ✅ | None (`Math.random()`, not cryptographically secure) |
 
 All functions are **pure**, **synchronous**, and **zero-dependency**.

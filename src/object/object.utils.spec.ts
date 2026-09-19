@@ -116,6 +116,45 @@ describe('isEqual', () => {
     it('returns false for undefined compared to a value', () => {
         expect(isEqual(undefined, 0)).toBe(false);
     });
+
+    it('returns true for equal objects with matching circular self-references', () => {
+        const a: Record<string, unknown> = { name: 'root' };
+        a.self = a;
+        const b: Record<string, unknown> = { name: 'root' };
+        b.self = b;
+
+        expect(() => isEqual(a, b)).not.toThrow();
+        expect(isEqual(a, b)).toBe(true);
+    });
+
+    it('returns false for circular objects that differ elsewhere', () => {
+        const a: Record<string, unknown> = { name: 'root', value: 1 };
+        a.self = a;
+        const b: Record<string, unknown> = { name: 'root', value: 2 };
+        b.self = b;
+
+        expect(isEqual(a, b)).toBe(false);
+    });
+
+    it('returns true for equal arrays with matching circular self-references', () => {
+        const a: unknown[] = [1, 2];
+        a.push(a);
+        const b: unknown[] = [1, 2];
+        b.push(b);
+
+        expect(() => isEqual(a, b)).not.toThrow();
+        expect(isEqual(a, b)).toBe(true);
+    });
+
+    it('returns true for mutually circular references (a.other = b, b.other = a)', () => {
+        const a: Record<string, unknown> = { name: 'a' };
+        const b: Record<string, unknown> = { name: 'a' };
+        a.other = b;
+        b.other = a;
+
+        expect(() => isEqual(a, b)).not.toThrow();
+        expect(isEqual(a, b)).toBe(true);
+    });
 });
 
 // ---------------------------------------------------------------------------

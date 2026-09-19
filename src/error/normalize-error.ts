@@ -57,6 +57,15 @@ interface RecursiveNormalizeOptions {
 
 function _normalizeErrorRecursive(value: unknown, options: RecursiveNormalizeOptions): ErrorEnvelope {
     if (isErrorEnvelope(value)) {
+        if (options.seen.has(value)) {
+            return {
+                name: 'Error',
+                message: 'Circular error reference.',
+                timestamp: options.timestamp,
+            };
+        }
+        options.seen.add(value);
+
         const normalizedCause =
             value.cause == null || options.currentDepth >= options.maxCauseDepth
                 ? value.cause
