@@ -1,8 +1,9 @@
 {
   "name": "js-util-kit",
   "version": "1.0.2",
-  "description": "",
+  "description": "A comprehensive TypeScript utility library providing type-safe, zero-dependency utilities for modern JavaScript/TypeScript applications",
   "type": "module",
+  "sideEffects": false,
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
@@ -28,7 +29,30 @@
     "dev": "tsdown src/index.ts --watch --format esm,cjs --dts",
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js"
   },
-  "keywords": [],
+  "keywords": [
+    "utilities",
+    "typescript",
+    "utils",
+    "helpers",
+    "validation",
+    "logger",
+    "error-handling",
+    "date-utils",
+    "string-utils",
+    "array-utils",
+    "auth",
+    "jwt",
+    "angular",
+    "react",
+    "node",
+    "browser",
+    "ssr",
+    "tree-shakeable",
+    "zero-dependencies"
+  ],
+  "engines": {
+    "node": ">=15.0.0"
+  },
   "author": "",
   "homepage": "https://github.com/pageupsoft-org/js-util-kit#readme",
   "repository": {

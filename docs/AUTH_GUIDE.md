@@ -342,14 +342,192 @@ async function resetPassword(token: string, newPassword: string): Promise<void> 
 
 ## Environment Compatibility
 
-| Function | Browser | Node.js | Dependencies |
-|----------|---------|---------|--------------|
-| `generateApiKey` | Yes | Yes | Web Crypto / Node crypto |
-| `hashPassword` | Yes | Yes | Web Crypto / Node crypto |
-| `verifyPassword` | Yes | Yes | Web Crypto / Node crypto |
-| `generateToken` | Yes | Yes | Web Crypto / Node crypto |
-| `verifyToken` | Yes | Yes | Web Crypto / Node crypto |
-| `decodeJwt` | Yes | Yes | None |
-| `isTokenExpired` | Yes | Yes | None |
+| Function | Browser | Node.js | React Native | Dependencies |
+|----------|---------|---------|--------------|--------------|
+| `generateApiKey` | Yes | Yes (v15+) | Requires polyfill | Web Crypto API |
+| `hashPassword` | Yes | Yes (v15+) | Requires polyfill | Web Crypto API |
+| `verifyPassword` | Yes | Yes (v15+) | Requires polyfill | Web Crypto API |
+| `generateToken` | Yes | Yes (v15+) | Requires polyfill | Web Crypto API |
+| `verifyToken` | Yes | Yes (v15+) | Requires polyfill | Web Crypto API |
+| `decodeJwt` | Yes | Yes | Yes | None |
+| `isTokenExpired` | Yes | Yes | Yes | None |
 
 All functions are **pure** and have **zero external dependencies**.
+
+---
+
+## React Native Compatibility
+
+### Prerequisites
+
+Auth utilities require the Web Crypto API, which is not available in React Native by default. You must install a polyfill:
+
+#### Option 1: Expo
+
+```bash
+npx expo install expo-crypto
+```
+
+#### Option 2: React Native CLI
+
+```bash
+npm install react-native-quick-crypto
+npm install react-native-get-random-values
+```
+
+### Setup
+
+Import the polyfill **before** any auth utilities:
+
+```typescript
+// index.js or App.tsx (must be at the very top)
+import 'react-native-get-random-values';
+
+// Now you can use auth utilities
+import { generateApiKey, hashPassword } from 'js-util-kit';
+```
+
+### Example: React Native Login
+
+```typescript
+// App.tsx
+import 'react-native-get-random-values'; // Must be first!
+import React, { useState } from 'react';
+import { View, TextInput, Button, Text } from 'react-native';
+import { hashPassword, verifyPassword } from 'js-util-kit';
+
+export default function LoginScreen() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleLogin = async () => {
+    try {
+      // In a real app, fetch user from backend
+      const user = await fetchUser(email);
+      
+      // Verify password
+      const isValid = await verifyPassword(password, user.passwordHash);
+      
+      if (!isValid) {
+        setError('Invalid credentials');
+        return;
+      }
+      
+      // Navigate to home
+      navigation.navigate('Home');
+    } catch (err) {
+      setError('Login failed');
+    }
+  };
+
+  return (
+    <View>
+      <TextInput value={email} onChangeText={setEmail} placeholder="Email" />
+      <TextInput value={password} onChangeText={setPassword} secureTextEntry placeholder="Password" />
+      <Button title="Login" onPress={handleLogin} />
+      {error && <Text>{error}</Text>}
+    </View>
+  );
+}
+```
+
+### Troubleshooting
+
+**Error: "Crypto API not available"**
+
+This means the polyfill wasn't loaded. Check:
+1. Polyfill import is **first** in your entry file (index.js or App.tsx)
+2. Polyfill package is installed: `npm ls react-native-get-random-values`
+3. Metro bundler was restarted after installing polyfill
+
+**Error: "btoa is not defined" or "atob is not defined"**
+
+Some older React Native versions don't include base64 functions. Install:
+
+```bash
+npm install base-64
+```
+
+Then polyfill globally:
+
+```typescript
+// index.js
+import { encode, decode } from 'base-64';
+
+if (!global.btoa) {
+  global.btoa = encode;
+}
+
+if (!global.atob) {
+  global.atob = decode;
+}
+```
+
+### Alternative: Backend-Only Auth
+
+For simpler React Native integration, handle all auth operations on the backend:
+
+```typescript
+// React Native - only JWT decoding (no crypto needed)
+import { decodeJwt, isTokenExpired } from 'js-util-kit';
+
+// Get token from backend
+const response = await fetch('https://api.example.com/login', {
+  method: 'POST',
+  body: JSON.stringify({ email, password }),
+});
+const { token } = await response.json();
+
+// Decode for UI display (doesn't require crypto)
+const payload = decodeJwt(token);
+console.log(`User ID: ${payload?.userId}`);
+
+// Check expiry client-side
+if (isTokenExpired(token)) {
+  // Refresh token or re-login
+}
+```
+
+---
+
+## Node.js Version Compatibility
+
+**Minimum Version**: Node.js **v15.0.0**
+
+Auth utilities use the Web Crypto API (`crypto.subtle`), which was added in Node.js v15.
+
+### For Node.js <v15
+
+Install a polyfill:
+
+```bash
+npm install @peculiar/webcrypto
+```
+
+Setup:
+
+```typescript
+// server.ts (top of file)
+import { Crypto } from '@peculiar/webcrypto';
+
+if (!globalThis.crypto) {
+  globalThis.crypto = new Crypto();
+}
+
+// Now auth utilities will work
+import { generateApiKey } from 'js-util-kit';
+```
+
+---
+
+## Browser Compatibility
+
+All auth utilities work in modern browsers:
+
+- ✅ Chrome 60+
+- ✅ Firefox 57+
+- ✅ Safari 11+
+- ✅ Edge 79+
+
+Older browsers (IE11, Safari <11) do not support Web Crypto API and are not supported.
