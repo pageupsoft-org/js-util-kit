@@ -243,6 +243,87 @@ describe('isMobileDevice', () => {
 
         expect(isMobileDevice()).toBe(false);
     });
+
+    it('returns true for Android devices', () => {
+        Object.defineProperty(navigator, 'userAgent', {
+            configurable: true,
+            value: 'Mozilla/5.0 (Linux; Android 10; SM-G973F)',
+        });
+
+        expect(isMobileDevice()).toBe(true);
+    });
+
+    it('returns true for iPad', () => {
+        Object.defineProperty(navigator, 'userAgent', {
+            configurable: true,
+            value: 'Mozilla/5.0 (iPad; CPU OS 13_3 like Mac OS X)',
+        });
+
+        expect(isMobileDevice()).toBe(true);
+    });
+
+    it('returns true for iPod', () => {
+        Object.defineProperty(navigator, 'userAgent', {
+            configurable: true,
+            value: 'Mozilla/5.0 (iPod touch; CPU iPhone 12_0 like Mac OS X)',
+        });
+
+        expect(isMobileDevice()).toBe(true);
+    });
+
+    it('returns true for BlackBerry', () => {
+        Object.defineProperty(navigator, 'userAgent', {
+            configurable: true,
+            value: 'Mozilla/5.0 (BlackBerry; U; BlackBerry 9900)',
+        });
+
+        expect(isMobileDevice()).toBe(true);
+    });
+
+    it('returns true for Opera Mini', () => {
+        Object.defineProperty(navigator, 'userAgent', {
+            configurable: true,
+            value: 'Opera/9.80 (J2ME/MIDP; Opera Mini/9.80)',
+        });
+
+        expect(isMobileDevice()).toBe(true);
+    });
+
+    it('returns true for IEMobile', () => {
+        Object.defineProperty(navigator, 'userAgent', {
+            configurable: true,
+            value: 'Mozilla/5.0 (compatible; MSIE 10.0; Windows Phone 8.0; IEMobile/10.0)',
+        });
+
+        expect(isMobileDevice()).toBe(true);
+    });
+
+    it('returns true for webOS', () => {
+        Object.defineProperty(navigator, 'userAgent', {
+            configurable: true,
+            value: 'Mozilla/5.0 (webOS/1.4.0; U; en-US) AppleWebKit/532.2',
+        });
+
+        expect(isMobileDevice()).toBe(true);
+    });
+
+    it('is case-insensitive for mobile detection', () => {
+        Object.defineProperty(navigator, 'userAgent', {
+            configurable: true,
+            value: 'mozilla iphone android',
+        });
+
+        expect(isMobileDevice()).toBe(true);
+    });
+
+    it('detects mobile in mixed case user agent strings', () => {
+        Object.defineProperty(navigator, 'userAgent', {
+            configurable: true,
+            value: 'ANDROID device',
+        });
+
+        expect(isMobileDevice()).toBe(true);
+    });
 });
 
 describe('isTouchDevice', () => {
@@ -279,6 +360,98 @@ describe('isTouchDevice', () => {
         });
 
         expect(isTouchDevice()).toBe(false);
+    });
+
+    it('returns true when maxTouchPoints is 1 (single touch)', () => {
+        Object.defineProperty(navigator, 'maxTouchPoints', {
+            configurable: true,
+            value: 1,
+        });
+
+        expect(isTouchDevice()).toBe(true);
+    });
+
+    it('returns true when maxTouchPoints is 10 (multi-touch)', () => {
+        Object.defineProperty(navigator, 'maxTouchPoints', {
+            configurable: true,
+            value: 10,
+        });
+
+        expect(isTouchDevice()).toBe(true);
+    });
+
+    it('returns false when maxTouchPoints is exactly 0', () => {
+        Object.defineProperty(window, 'ontouchstart', {
+            configurable: true,
+            value: undefined,
+        });
+        Object.defineProperty(navigator, 'maxTouchPoints', {
+            configurable: true,
+            value: 0,
+        });
+
+        expect(isTouchDevice()).toBe(false);
+    });
+
+    it('returns false when maxTouchPoints is negative', () => {
+        Object.defineProperty(window, 'ontouchstart', {
+            configurable: true,
+            value: undefined,
+        });
+        Object.defineProperty(navigator, 'maxTouchPoints', {
+            configurable: true,
+            value: -1,
+        });
+
+        expect(isTouchDevice()).toBe(false);
+    });
+
+    it('returns false when maxTouchPoints is not a number', () => {
+        Object.defineProperty(window, 'ontouchstart', {
+            configurable: true,
+            value: undefined,
+        });
+        Object.defineProperty(navigator, 'maxTouchPoints', {
+            configurable: true,
+            value: undefined,
+        });
+
+        expect(isTouchDevice()).toBe(false);
+    });
+
+    it('returns true when both ontouchstart and maxTouchPoints are present', () => {
+        Object.defineProperty(window, 'ontouchstart', {
+            configurable: true,
+            value: jest.fn(),
+        });
+        Object.defineProperty(navigator, 'maxTouchPoints', {
+            configurable: true,
+            value: 5,
+        });
+
+        expect(isTouchDevice()).toBe(true);
+    });
+
+    it('returns true when ontouchstart is null (not undefined)', () => {
+        Object.defineProperty(window, 'ontouchstart', {
+            configurable: true,
+            value: null,
+        });
+        Object.defineProperty(navigator, 'maxTouchPoints', {
+            configurable: true,
+            value: 0,
+        });
+
+        expect(isTouchDevice()).toBe(true);
+    });
+
+    it('handles ontouchstart as an empty function', () => {
+        Object.defineProperty(window, 'ontouchstart', {
+            configurable: true,
+            value: () => {},
+        });
+
+        expect(isTouchDevice()).toBe(true);
     });
 });
 
