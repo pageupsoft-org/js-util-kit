@@ -35,39 +35,36 @@ The date module provides utilities for formatting, parsing, and manipulating dat
 ### `formatDate`
 
 ```typescript
-formatDate(date: Date | string | null | undefined, pattern?: string): string
+formatDate(value: Date | string | null | undefined, format = 'YYYY-MM-DD'): string
 ```
 
-**What:** Formats a date using a pattern with tokens for year, month, day.
+**What:** Formats a date using a token-based format string and local time.
 
 **When:** Displaying dates in UI, reports, emails, logs.
 
 **Why:** Consistent formatting without Intl API complexity or moment.js dependency.
 
-**Token Reference:**
+**Supported Tokens:**
 | Token | Meaning | Example |
 |-------|---------|---------|
 | `YYYY` | 4-digit year | `2026` |
-| `YY` | 2-digit year | `26` |
 | `MM` | 2-digit month | `07` |
-| `M` | Month without padding | `7` |
 | `DD` | 2-digit day | `30` |
-| `D` | Day without padding | `3` |
 
 **Example:**
 ```typescript
 import { formatDate } from 'js-util-kit';
 
-const date = new Date('2026-07-30T14:05:09');
+const date = new Date(2026, 5, 30); // June 30, 2026
 
-formatDate(date);                        // '2026-07-30'
-formatDate(date, 'YYYY-MM-DD');           // '2026-07-30'
-formatDate(date, 'MM/DD/YYYY');           // '07/30/2026'
-formatDate(date, 'DD-MMM-YYYY');          // '30-07-2026'
-formatDate(date, 'YYYY');                  // '2026'
-formatDate('2026-07-30', 'MMMM DD, YYYY'); // 'July 30, 2026'
-formatDate(new Date());                     // Today's date in default format
-formatDate(null);                           // ''
+formatDate(date);                 // '2026-06-30'
+formatDate(date, 'YYYY-MM-DD');   // '2026-06-30'
+formatDate(date, 'DD/MM/YYYY');   // '30/06/2026'
+formatDate(date, 'MM/DD/YYYY');   // '06/30/2026'
+formatDate('2026-06-30');         // '2026-06-30'
+formatDate(null);                 // ''
+formatDate(undefined);            // ''
+formatDate('invalid');            // ''
 ```
 
 ---
@@ -75,47 +72,35 @@ formatDate(null);                           // ''
 ### `formatDateTime`
 
 ```typescript
-formatDateTime(date: Date | string | null | undefined, pattern?: string): string
+formatDateTime(value: Date | string | null | undefined, format = 'YYYY-MM-DD HH:mm:ss'): string
 ```
 
-**What:** Formats a date and time using a pattern with tokens for year, month, day, hour, minute, second.
+**What:** Formats a date and time using a token-based format string and local time.
 
 **When:** Displaying date-times in UI, logs, timestamps.
 
-**Token Reference:**
+**Supported Tokens:**
 | Token | Meaning | Example |
 |-------|---------|---------|
 | `YYYY` | 4-digit year | `2026` |
-| `YY` | 2-digit year | `26` |
-| `MM` | 2-digit month | `07` |
-| `M` | Month without padding | `7` |
+| `MM` | 2-digit month | `06` |
 | `DD` | 2-digit day | `30` |
-| `D` | Day without padding | `3` |
 | `HH` | 2-digit hour (24h) | `14` |
-| `H` | Hour without padding (24h) | `2` |
-| `hh` | 2-digit hour (12h) | `02` |
-| `h` | Hour without padding (12h) | `2` |
 | `mm` | 2-digit minute | `05` |
-| `m` | Minute without padding | `5` |
 | `ss` | 2-digit second | `09` |
-| `s` | Second without padding | `9` |
-| `A` | AM/PM uppercase | `PM` |
-| `a` | AM/PM lowercase | `pm` |
 
 **Example:**
 ```typescript
 import { formatDateTime } from 'js-util-kit';
 
-const date = new Date('2026-07-30T14:05:09');
+const date = new Date(2026, 5, 30, 14, 30, 0); // June 30, 2026, 14:30:00
 
-formatDateTime(date);                        // '2026-07-30 14:05:09'
-formatDateTime(date, 'YYYY-MM-DD HH:mm:ss');  // '2026-07-30 14:05:09'
-formatDateTime(date, 'MM/DD/YYYY HH:mm');     // '07/30/2026 14:05'
-formatDateTime(date, 'DD/MM/YYYY hh:mm A');   // '30/07/2026 02:05 PM'
-formatDateTime(date, 'YYYY');                  // '2026'
-formatDateTime('2026-07-30', 'YYYY-MM-DD');   // '2026-07-30 00:00:00'
-formatDateTime(new Date());                     // Current date-time in default format
-formatDateTime(null);                           // ''
+formatDateTime(date);                         // '2026-06-30 14:30:00'
+formatDateTime(date, 'YYYY-MM-DD HH:mm:ss');  // '2026-06-30 14:30:00'
+formatDateTime(date, 'DD/MM/YYYY HH:mm');     // '30/06/2026 14:30'
+formatDateTime(date, 'MM/DD/YYYY HH:mm');     // '06/30/2026 14:30'
+formatDateTime(null);                         // ''
+formatDateTime('not-a-date');                 // ''
 ```
 
 ---
@@ -123,29 +108,38 @@ formatDateTime(null);                           // ''
 ### `parseDate`
 
 ```typescript
-parseDate(dateStr: string, pattern: string): Date | undefined
+parseDate(dateStr: string, format: string): Date | undefined
 ```
 
-**What:** Parses a date string using a known format pattern.
+**What:** Parses a date string using a format pattern.
 
 **When:** Converting user input, CSV data, or string dates to `Date` objects.
 
-**Why:** Strict parsing without ambiguity — unlike `new Date('2026-07-30')` which varies by implementation.
+**Why:** Strict parsing with explicit format — unlike `new Date()` which has ambiguous behavior.
 
-**Supported Tokens:** `YYYY`, `YY`, `MM`, `M`, `DD`, `D`, `HH`, `H`, `hh`, `h`, `mm`, `m`, `ss`, `s`, `A`, `a`
+**Supported Tokens:** `YYYY`, `MM`, `DD`, `HH`, `mm`
 
 **Example:**
 ```typescript
 import { parseDate } from 'js-util-kit';
 
-parseDate('30/07/2026', 'DD/MM/YYYY'); // Date(2026-07-30T00:00:00)
-parseDate('07/30/2026', 'MM/DD/YYYY'); // Date(2026-07-30T00:00:00)
-parseDate('2026-07-30', 'YYYY-MM-DD');  // Date(2026-07-30T00:00:00)
-parseDate('2026-07-30 14:05', 'YYYY-MM-DD HH:mm'); // Date(2026-07-30T14:05:00)
-parseDate('30/07/2026 02:05 PM', 'DD/MM/YYYY hh:mm A'); // Date(2026-07-30T14:05:00)
-parseDate('invalid', 'YYYY-MM-DD');      // undefined
-parseDate('30-07-2026', 'YYYY-MM-DD');   // undefined (pattern mismatch)
-parseDate('');                            // undefined
+parseDate('30/07/2026', 'DD/MM/YYYY');
+// Date(2026-07-30T00:00:00)
+
+parseDate('07/30/2026', 'MM/DD/YYYY');
+// Date(2026-07-30T00:00:00)
+
+parseDate('2026-07-30', 'YYYY-MM-DD');
+// Date(2026-07-30T00:00:00)
+
+parseDate('2026-07-30 14:05', 'YYYY-MM-DD HH:mm');
+// Date(2026-07-30T14:05:00)
+
+parseDate('invalid', 'YYYY-MM-DD');
+// undefined
+
+parseDate('30-07-2026', 'YYYY-MM-DD');
+// undefined (pattern mismatch)
 ```
 
 ---
@@ -153,10 +147,13 @@ parseDate('');                            // undefined
 ### `addBusinessDays`
 
 ```typescript
-addBusinessDays(date: Date | string, days: number): Date
+addBusinessDays(
+  date: Date | string | null | undefined,
+  days: number
+): Date | null
 ```
 
-**What:** Returns a new Date with N business days added (skips weekends).
+**What:** Adds a number of business days (Monday–Friday) to a date, skipping Saturdays and Sundays. Negative values move backwards in time.
 
 **When:** Due dates, SLA calculations, business day scheduling.
 
@@ -166,13 +163,19 @@ addBusinessDays(date: Date | string, days: number): Date
 ```typescript
 import { addBusinessDays } from 'js-util-kit';
 
-const friday = new Date('2026-07-31'); // Friday
-addBusinessDays(friday, 1);  // Monday, Aug 3
-addBusinessDays(friday, 3);  // Wednesday, Aug 5
-addBusinessDays(friday, -1); // Thursday, Jul 30
+// Friday + 1 business day = Monday
+const friday = new Date(2026, 5, 26); // June 26, 2026 (Friday)
+addBusinessDays(friday, 1);  // Monday, June 29, 2026
+addBusinessDays(friday, 3);  // Wednesday, July 1, 2026
+addBusinessDays(friday, -1); // Thursday, June 25, 2026
 
-// Month/year boundary handling
-addBusinessDays(new Date('2026-01-30'), 1); // Feb 2 (skips weekend)
+// Null handling
+addBusinessDays(null, 1);    // null
+addBusinessDays('invalid', 1); // null
+
+// Throws RangeError for non-finite days
+addBusinessDays(friday, Infinity);  // RangeError
+addBusinessDays(friday, NaN);       // RangeError
 ```
 
 ---
@@ -180,23 +183,30 @@ addBusinessDays(new Date('2026-01-30'), 1); // Feb 2 (skips weekend)
 ### `calculateAge`
 
 ```typescript
-calculateAge(birthDate: Date | string, referenceDate?: Date | string): number
+calculateAge(birthDate: Date | string | null | undefined): number | null
 ```
 
-**What:** Calculates age in years from a birth date.
+**What:** Calculates a person's age in full years as of today's local date.
 
 **When:** User profiles, age verification, birthday calculations.
 
 **Why:** Accurate age calculation handling leap years and birthdays.
 
+**Note:** Reads `new Date()` internally and is therefore not a pure function. In tests, use `jest.useFakeTimers()` / `jest.setSystemTime()` to control today's date.
+
 **Example:**
 ```typescript
 import { calculateAge } from 'js-util-kit';
 
-calculateAge('2000-01-01');                    // Age as of today
-calculateAge('2000-01-01', '2026-01-01');      // 26
-calculateAge('2000-12-31', '2026-01-01');      // 25 (birthday not yet)
-calculateAge('2010-02-29', '2026-02-28');      // 15 (leap year handling)
+// Today is 2026-06-30
+calculateAge(new Date(1996, 5, 30));  // 30
+calculateAge(new Date(1996, 6, 1));   // 29 (birthday not yet)
+calculateAge('1996-06-30');            // 30
+
+// Returns null for invalid or future dates
+calculateAge(null);                    // null
+calculateAge('invalid');               // null
+calculateAge(new Date(2027, 0, 1));    // null (future date)
 ```
 
 ---
@@ -204,61 +214,91 @@ calculateAge('2010-02-29', '2026-02-28');      // 15 (leap year handling)
 ### `compareDatesIgnoringTime`
 
 ```typescript
-compareDatesIgnoringTime(dateA: Date | string, dateB: Date | string): number
+compareDatesIgnoringTime(
+  a: Date | string | null | undefined,
+  b: Date | string | null | undefined
+): number | null
 ```
 
-**What:** Compares two dates ignoring time components. Returns -1, 0, or 1.
+**What:** Compares two dates ignoring their time components, using local calendar dates.
 
 **When:** Sorting dates by day, grouping events by date, date range checks.
 
 **Why:** `Date` comparison includes time, which can cause unexpected ordering.
 
+**Returns:** `-1` if `a` is before `b`, `0` if equal, `1` if after, or `null` for any null, undefined, or invalid input.
+
 **Example:**
 ```typescript
 import { compareDatesIgnoringTime } from 'js-util-kit';
 
-compareDatesIgnoringTime('2026-07-30T10:00', '2026-07-30T23:59'); // 0 (same day)
-compareDatesIgnoringTime('2026-07-30', '2026-07-31'); // -1
-compareDatesIgnoringTime('2026-07-31', '2026-07-30'); // 1
+const a = new Date(2026, 5, 29);
+const b = new Date(2026, 5, 30);
+
+compareDatesIgnoringTime(a, b);  // -1
+
+// Same calendar date, different times
+const morning = new Date(2026, 5, 30, 0, 0);
+const evening = new Date(2026, 5, 30, 23, 59);
+compareDatesIgnoringTime(morning, evening);  // 0
+
+// Null handling
+compareDatesIgnoringTime(null, b);     // null
+compareDatesIgnoringTime(a, 'invalid'); // null
 ```
 
 ---
 
-### `convertLocalToUTC`
+### `convertLocalToUtc`
 
 ```typescript
-convertLocalToUTC(date: Date | string): Date
+convertLocalToUtc(date: Date | string | null | undefined): Date | null
 ```
 
-**What:** Converts a local date to UTC.
+**What:** Converts a local `Date` to a new `Date` whose UTC time values reflect the equivalent UTC wall-clock time.
 
-**When:** Storing dates in UTC, sending to APIs that expect UTC.
+**When:** Storing dates in UTC, sending to APIs that expect UTC. This is the inverse of `convertUtcToLocal`.
+
+**Why:** Shifts the timestamp backwards by the runtime's UTC offset. The result depends on the runtime timezone.
 
 **Example:**
 ```typescript
-import { convertLocalToUTC } from 'js-util-kit';
+import { convertLocalToUtc } from 'js-util-kit';
 
-// Local midnight becomes UTC midnight of previous/next day depending on timezone
-convertLocalToUTC('2026-07-30T00:00:00'); // 2026-07-29T22:00:00.000Z (if UTC+2)
+// In UTC+2: local 10:00 → 08:00 UTC
+const local = new Date(2026, 5, 30, 10, 0, 0);
+const utc = convertLocalToUtc(local);
+utc?.toISOString();  // '2026-06-30T08:00:00.000Z' (UTC+2 runtime)
+
+// Null handling
+convertLocalToUtc(null);  // null
 ```
 
 ---
 
-### `convertUTCToLocal`
+### `convertUtcToLocal`
 
 ```typescript
-convertUTCToLocal(date: Date | string): Date
+convertUtcToLocal(date: Date | string | null | undefined): Date | null
 ```
 
-**What:** Converts a UTC date to local time.
+**What:** Converts a UTC `Date` to a new `Date` whose UTC time values reflect the equivalent local wall-clock time.
 
 **When:** Displaying UTC dates in user's local timezone.
 
+**Why:** Shifts the timestamp forward by the runtime's UTC offset so that `toISOString()` on the result displays the local time.
+
 **Example:**
 ```typescript
-import { convertUTCToLocal } from 'js-util-kit';
+import { convertUtcToLocal } from 'js-util-kit';
 
-convertUTCToLocal('2026-07-30T00:00:00.000Z'); // 2026-07-30T02:00:00 (if UTC+2)
+// In UTC+2: 08:00 UTC → local 10:00
+const utc = new Date('2026-06-30T08:00:00Z');
+const local = convertUtcToLocal(utc);
+local?.toISOString();  // '2026-06-30T10:00:00.000Z' (UTC+2 runtime)
+
+// Null handling
+convertUtcToLocal(null);  // null
 ```
 
 ---
@@ -266,10 +306,10 @@ convertUTCToLocal('2026-07-30T00:00:00.000Z'); // 2026-07-30T02:00:00 (if UTC+2)
 ### `getStartOfDay`
 
 ```typescript
-getStartOfDay(date: Date | string): Date
+getStartOfDay(date: Date | string | null | undefined): Date | null
 ```
 
-**What:** Returns a new Date set to 00:00:00.000 of the given date.
+**What:** Returns a new `Date` set to the start of the given day (00:00:00.000) in local time.
 
 **When:** Day boundary calculations, date range queries.
 
@@ -277,7 +317,12 @@ getStartOfDay(date: Date | string): Date
 ```typescript
 import { getStartOfDay } from 'js-util-kit';
 
-getStartOfDay('2026-07-30T14:05:09'); // 2026-07-30T00:00:00.000
+const date = new Date(2026, 5, 30, 14, 30, 45);
+getStartOfDay(date);
+// Date for 2026-06-30T00:00:00.000
+
+// Null handling
+getStartOfDay(null);  // null
 ```
 
 ---
@@ -285,10 +330,10 @@ getStartOfDay('2026-07-30T14:05:09'); // 2026-07-30T00:00:00.000
 ### `getEndOfDay`
 
 ```typescript
-getEndOfDay(date: Date | string): Date
+getEndOfDay(date: Date | string | null | undefined): Date | null
 ```
 
-**What:** Returns a new Date set to 23:59:59.999 of the given date.
+**What:** Returns a new `Date` set to the end of the given day (23:59:59.999) in local time.
 
 **When:** Day boundary calculations, inclusive date range queries.
 
@@ -296,7 +341,12 @@ getEndOfDay(date: Date | string): Date
 ```typescript
 import { getEndOfDay } from 'js-util-kit';
 
-getEndOfDay('2026-07-30T14:05:09'); // 2026-07-30T23:59:59.999
+const date = new Date(2026, 5, 30, 8, 0, 0);
+getEndOfDay(date);
+// Date for 2026-06-30T23:59:59.999
+
+// Null handling
+getEndOfDay(null);  // null
 ```
 
 ---
@@ -304,10 +354,10 @@ getEndOfDay('2026-07-30T14:05:09'); // 2026-07-30T23:59:59.999
 ### `isWeekend`
 
 ```typescript
-isWeekend(date: Date | string): boolean
+isWeekend(value: Date | string | null | undefined): boolean
 ```
 
-**What:** Checks if a date falls on Saturday or Sunday.
+**What:** Returns `true` if the given date falls on a Saturday or Sunday (local time).
 
 **When:** Business day calculations, scheduling, UI indicators.
 
@@ -315,9 +365,13 @@ isWeekend(date: Date | string): boolean
 ```typescript
 import { isWeekend } from 'js-util-kit';
 
-isWeekend('2026-07-30'); // false (Thursday)
-isWeekend('2026-08-01'); // true (Saturday)
-isWeekend('2026-08-02'); // true (Sunday)
+isWeekend(new Date(2026, 5, 27));  // true (Saturday)
+isWeekend(new Date(2026, 5, 28));  // true (Sunday)
+isWeekend(new Date(2026, 5, 29));  // false (Monday)
+
+// Null handling
+isWeekend(null);      // false
+isWeekend('invalid'); // false
 ```
 
 ---
@@ -326,7 +380,7 @@ isWeekend('2026-08-02'); // true (Sunday)
 
 ### Format a Date for Display
 ```typescript
-import { formatDate, parseDate } from 'js-util-kit';
+import { formatDate, parseDate, compareDatesIgnoringTime } from 'js-util-kit';
 
 function formatUserDate(dateStr: string): string {
   const date = parseDate(dateStr, 'YYYY-MM-DD');
@@ -343,13 +397,13 @@ function formatUserDate(dateStr: string): string {
   tomorrow.setDate(tomorrow.getDate() + 1);
   if (compareDatesIgnoringTime(date, tomorrow) === 0) return 'Tomorrow';
 
-  return formatDate(date, 'MMMM DD, YYYY');
+  return formatDate(date, 'DD/MM/YYYY');
 }
 ```
 
 ### Parse User Input
 ```typescript
-import { parseDate, formatDate } from 'js-util-kit';
+import { parseDate } from 'js-util-kit';
 
 function parseUserBirthday(input: string): Date | null {
   // Try multiple common formats
@@ -357,8 +411,6 @@ function parseUserBirthday(input: string): Date | null {
     'YYYY-MM-DD',
     'MM/DD/YYYY',
     'DD/MM/YYYY',
-    'MM-DD-YYYY',
-    'DD-MM-YYYY'
   ];
 
   for (const format of formats) {
@@ -373,7 +425,7 @@ function parseUserBirthday(input: string): Date | null {
 ```typescript
 import { addBusinessDays, isWeekend } from 'js-util-kit';
 
-function getNextBusinessDay(date: Date): Date {
+function getNextBusinessDay(date: Date): Date | null {
   let next = new Date(date);
   next.setDate(next.getDate() + 1);
   while (isWeekend(next)) {
@@ -382,9 +434,25 @@ function getNextBusinessDay(date: Date): Date {
   return next;
 }
 
-function scheduleMeeting(daysAhead: number): Date {
+function scheduleMeeting(daysAhead: number): Date | null {
   return addBusinessDays(new Date(), daysAhead);
- }
+}
+```
+
+### Date Range Query
+```typescript
+import { getStartOfDay, getEndOfDay } from 'js-util-kit';
+
+function getDateRange(date: Date) {
+  const start = getStartOfDay(date);
+  const end = getEndOfDay(date);
+  return { start, end };
+}
+
+// For database queries
+const today = new Date();
+const range = getDateRange(today);
+// SELECT * FROM events WHERE timestamp >= range.start AND timestamp <= range.end
 ```
 
 ---

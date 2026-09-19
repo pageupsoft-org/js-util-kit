@@ -127,12 +127,12 @@ Complete API reference for `js-util-kit` organized by domain and environment com
 
 | Export | Type | Environment | Description |
 |--------|------|-------------|-------------|
-| `isValidEmail` | Function | 🌐 Universal | Validates email format (RFC 5322 compliant) |
-| `isValidPhoneNumber` | Function | 🌐 Universal | Validates phone number (E.164 format) |
-| `isValidUrl` | Function | 🌐 Universal | Validates URL format |
-| `isStrongPassword` | Function | 🌐 Universal | Checks password strength (configurable rules) |
-| `validateFileSize` | Function | 🌐 Universal | Validates file size against limits |
-| `validateFileExtension` | Function | 🌐 Universal | Validates file extension against allowlist |
+| `isValidEmail` | Function | 🌐 Universal | Validates email format (practical regex, not full RFC 5322) |
+| `isValidPhoneNumber` | Function | 🌐 Universal | Validates phone number (international/e164/national formats) |
+| `isValidUrl` | Function | 🌐 Universal | Validates absolute HTTP/HTTPS URL |
+| `isStrongPassword` | Function | 🌐 Universal | Checks password strength with configurable rules |
+| `validateFileSize` | Function | 🌐 Universal | Validates file/blob size against byte limit |
+| `validateFileExtension` | Function | 🌐 Universal | Validates filename extension against allowlist |
 
 ---
 
@@ -140,16 +140,17 @@ Complete API reference for `js-util-kit` organized by domain and environment com
 
 | Export | Type | Environment | Description |
 |--------|------|-------------|-------------|
-| `capitalize` | Function | 🌐 Universal | Capitalizes first letter of each word |
+| `capitalize` | Function | 🌐 Universal | Capitalizes first character of string (leaves rest unchanged) |
 | `capitalizeFirstLetter` | Function | 🌐 Universal | Capitalizes only first letter of string |
-| `truncateText` | Function | 🌐 Universal | Truncates text with ellipsis |
-| `toTitleCase` | Function | 🌐 Universal | Converts to title case |
-| `maskSensitiveData` | Function | 🌐 Universal | Masks sensitive data (cards, SSN, etc.) |
+| `truncateText` | Function | 🌐 Universal | Truncates text with ellipsis at word boundary |
+| `toTitleCase` | Function | 🌐 Universal | Converts to title case (capitalizes first letter of each word) |
+| `maskSensitiveData` | Function | 🌐 Universal | Masks all but last N characters with asterisks |
 | `sanitizeFilename` | Function | 🌐 Universal | Sanitizes string for safe filename |
-| `removeSpecialCharacters` | Function | 🌐 Universal | Removes non-alphanumeric characters |
+| `removeSpecialChar` | Function | 🌐 Universal | Removes non-alphanumeric characters |
 | `removeExtraWhitespaces` | Function | 🌐 Universal | Normalizes whitespace |
 | `isNullOrWhitespace` | Function | 🌐 Universal | Checks if string is null/empty/whitespace |
 | `generateRandomString` | Function | 🌐 Universal | Generates cryptographically secure random string |
+| `generateUuid` | Function | 🌐 Universal | Generates cryptographically secure UUID (v4) |
 
 ---
 
@@ -184,10 +185,14 @@ Complete API reference for `js-util-kit` organized by domain and environment com
 
 | Export | Type | Environment | Description |
 |--------|------|-------------|-------------|
-| `setItem` | Function | 🌍 Browser Only | Type-safe localStorage/sessionStorage setter |
-| `getItem` | Function | 🌍 Browser Only | Type-safe localStorage/sessionStorage getter |
-| `removeItem` | Function | 🌍 Browser Only | Removes item from storage |
-| `clearItems` | Function | 🌍 Browser Only | Clears all items from storage |
+| `setLocalStorage` | Function | 🌍 Browser Only | Type-safe localStorage setter with JSON serialization |
+| `getLocalStorage` | Function | 🌍 Browser Only | Type-safe localStorage getter with JSON parsing |
+| `removeLocalStorage` | Function | 🌍 Browser Only | Removes item from localStorage |
+| `clearLocalStorage` | Function | 🌍 Browser Only | Clears localStorage (optionally by prefix) |
+| `setSessionStorage` | Function | 🌍 Browser Only | Type-safe sessionStorage setter with JSON serialization |
+| `getSessionStorage` | Function | 🌍 Browser Only | Type-safe sessionStorage getter with JSON parsing |
+| `removeSessionStorage` | Function | 🌍 Browser Only | Removes item from sessionStorage |
+| `clearSessionStorage` | Function | 🌍 Browser Only | Clears sessionStorage (optionally by prefix) |
 
 ---
 
@@ -230,12 +235,17 @@ Complete API reference for `js-util-kit` organized by domain and environment com
 
 | Export | Type | Environment | Description |
 |--------|------|-------------|-------------|
-| `formatDate` | Function | 🌐 Universal | Formats date with custom pattern |
-| `parseDate` | Function | 🌐 Universal | Parses date string with pattern |
-| `addDays` | Function | 🌐 Universal | Adds days to date |
-| `subtractDays` | Function | 🌐 Universal | Subtracts days from date |
-| `isSameDay` | Function | 🌐 Universal | Checks if two dates are same day |
-| `getDaysBetween` | Function | 🌐 Universal | Gets days between two dates |
+| `formatDate` | Function | 🌐 Universal | Formats date with token-based pattern (YYYY-MM-DD, etc.) |
+| `formatDateTime` | Function | 🌐 Universal | Formats date and time with token-based pattern |
+| `parseDate` | Function | 🌐 Universal | Parses date string with format pattern |
+| `addBusinessDays` | Function | 🌐 Universal | Adds business days (Mon-Fri) to date, skipping weekends |
+| `calculateAge` | Function | 🌐 Universal | Calculates age in full years from birth date |
+| `compareDatesIgnoringTime` | Function | 🌐 Universal | Compares calendar dates ignoring time components |
+| `convertLocalToUtc` | Function | 🌐 Universal | Converts local Date to UTC-shifted Date |
+| `convertUtcToLocal` | Function | 🌐 Universal | Converts UTC Date to local-shifted Date |
+| `getStartOfDay` | Function | 🌐 Universal | Returns Date at 00:00:00.000 local time |
+| `getEndOfDay` | Function | 🌐 Universal | Returns Date at 23:59:59.999 local time |
+| `isWeekend` | Function | 🌐 Universal | Checks if date falls on Saturday or Sunday |
 
 ---
 
@@ -243,11 +253,13 @@ Complete API reference for `js-util-kit` organized by domain and environment com
 
 | Export | Type | Environment | Description |
 |--------|------|-------------|-------------|
-| `generateApiKey` | Function | 🌐 Universal | Generates secure API key |
-| `hashPassword` | Function | 🌐 Universal | Hashes password with bcrypt |
-| `verifyPassword` | Function | 🌐 Universal | Verifies password against hash |
-| `generateToken` | Function | 🌐 Universal | Generates JWT-like token |
-| `verifyToken` | Function | 🌐 Universal | Verifies token signature |
+| `decodeJwt` | Function | 🌐 Universal | Decodes JWT payload without verification (client-side only) |
+| `isTokenExpired` | Function | 🌐 Universal | Checks if JWT is expired based on exp claim |
+| `generateApiKey` | Function | 🌐 Universal | Generates cryptographically secure API key |
+| `hashPassword` | Function | 🌐 Universal | Hashes password using PBKDF2 with SHA-256 |
+| `verifyPassword` | Function | 🌐 Universal | Verifies password against PBKDF2 hash |
+| `generateToken` | Function | 🌐 Universal | Generates JWT-like signed token with HMAC-SHA256 |
+| `verifyToken` | Function | 🌐 Universal | Verifies token signature and expiration |
 
 ---
 
@@ -255,12 +267,14 @@ Complete API reference for `js-util-kit` organized by domain and environment com
 
 | Export | Type | Environment | Description |
 |--------|------|-------------|-------------|
-| `chunk` | Function | 🌐 Universal | Splits array into chunks |
-| `unique` | Function | 🌐 Universal | Removes duplicates |
-| `shuffle` | Function | 🌐 Universal | Fisher-Yates shuffle |
-| `flatten` | Function | 🌐 Universal | Flattens nested arrays |
-| `groupBy` | Function | 🌐 Universal | Groups array by key function |
-| `sortBy` | Function | 🌐 Universal | Sorts array by key(s) |
+| `chunk` | Function | 🌐 Universal | Splits array into consecutive sub-arrays of size N |
+| `distinct` | Function | 🌐 Universal | Removes duplicates using Set (reference equality) |
+| `distinctBy` | Function | 🌐 Universal | Removes duplicates by key selector function |
+| `removeDuplicates` | Function | 🌐 Universal | Removes duplicate primitives (typed for string/number/boolean/bigint) |
+| `groupBy` | Function | 🌐 Universal | Groups array elements by string key function |
+| `moveItem` | Function | 🌐 Universal | Moves array element from one index to another |
+| `sortBy` | Function | 🌐 Universal | Sorts array by selector function (asc/desc) |
+| `sortArray` | Function | 🌐 Universal | Creates multi-rule comparator for Array.prototype.sort |
 
 ---
 

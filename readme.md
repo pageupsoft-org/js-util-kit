@@ -19,7 +19,7 @@ A comprehensive TypeScript utility library providing type-safe, zero-dependency 
 | [URL Guide](https://github.com/pageupsoft-org/js-util-kit/blob/main/docs/URL_GUIDE.md) | Query string parsing/building and URL manipulation |
 | [Date Guide](https://github.com/pageupsoft-org/js-util-kit/blob/main/docs/DATE_GUIDE.md) | Formatting, parsing, and date math utilities |
 | [Auth Guide](https://github.com/pageupsoft-org/js-util-kit/blob/main/docs/AUTH_GUIDE.md) | Token generation, password hashing, and verification |
-| [Array Guide](https://github.com/pageupsoft-org/js-util-kit/blob/main/docs/ARRAY_GUIDE.md) | Chunking, deduplication, shuffling, grouping, and sorting |
+| [Array Guide](https://github.com/pageupsoft-org/js-util-kit/blob/main/docs/ARRAY_GUIDE.md) | Chunking, deduplication, grouping, and sorting |
 | [Angular Integration Guide](https://github.com/pageupsoft-org/js-util-kit/blob/main/docs/ANGULAR_GUIDE.md) | Angular-specific integration and usage patterns |
 | [React Integration Guide](https://github.com/pageupsoft-org/js-util-kit/blob/main/docs/REACT_GUIDE.md) | React-specific integration and usage patterns |
 | [Express Integration Guide](https://github.com/pageupsoft-org/js-util-kit/blob/main/docs/EXPRESS_GUIDE.md) | Express/Node.js backend integration guide |
@@ -44,7 +44,7 @@ npm install js-util-kit
 - **URL Utilities** - Query string parsing/building, base URL extraction
 - **Date Utilities** - Formatting, parsing, and date math
 - **Auth Utilities** - Token generation, password hashing, and verification
-- **Array Utilities** - Chunking, deduplication, shuffling, grouping, and sorting
+- **Array Utilities** - Chunking, deduplication, grouping, and sorting
 
 ## License
 
