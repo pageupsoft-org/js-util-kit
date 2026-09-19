@@ -39,3 +39,11 @@ export function _getJwtPayloadSegment(token: string): string | null {
 
     return parts[1] ?? null;
 }
+
+export function _getCrypto(): Crypto | null {
+    const g = globalThis as typeof globalThis & { crypto?: Crypto };
+    if (g.crypto && typeof g.crypto.getRandomValues === 'function') {
+        return g.crypto;
+    }
+    return null;
+}

@@ -1,10 +1,11 @@
 /** @jest-environment jsdom */
 
-import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import {
     copyToClipboard,
     openInNewTab,
     downloadBlob,
+    downloadFile,
     isMobileDevice,
     isTouchDevice,
     scrollToElement,
@@ -134,6 +135,84 @@ describe('downloadBlob', () => {
         expect(downloadBlob(null, 'file.txt')).toBe(false);
         expect(downloadBlob(undefined, 'file.txt')).toBe(false);
         expect(downloadBlob(new Blob(['ok']), '')).toBe(false);
+    });
+});
+
+describe('downloadFile', () => {
+    let fetchMock: any;
+
+    beforeEach(() => {
+        fetchMock = jest.fn();
+        Object.defineProperty(globalThis, 'fetch', {
+            configurable: true,
+            writable: true,
+            value: fetchMock,
+        });
+        jest.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test-url');
+        jest.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+        jest.spyOn(document.body, 'appendChild').mockImplementation((node) => node);
+        jest.spyOn(document.body, 'removeChild').mockImplementation((node) => node);
+        jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+
+    it('downloads a file and triggers download', async () => {
+        const mockBlob = new Blob(['content'], { type: 'application/pdf' });
+        fetchMock.mockResolvedValue({
+            ok: true,
+            blob: () => Promise.resolve(mockBlob),
+            headers: new Headers(),
+        });
+
+        await downloadFile('/api/file.pdf', 'test.pdf');
+
+        expect(fetchMock).toHaveBeenCalledWith('/api/file.pdf');
+    });
+
+    it('extracts filename from Content-Disposition header', async () => {
+        const mockBlob = new Blob(['content']);
+        const headers = new Headers();
+        headers.set('content-disposition', 'attachment; filename="server-file.pdf"');
+        fetchMock.mockResolvedValue({
+            ok: true,
+            blob: () => Promise.resolve(mockBlob),
+            headers,
+        });
+
+        await downloadFile('/api/file.pdf');
+
+        // Should not throw
+    });
+
+    it('falls back to URL-based filename when no header', async () => {
+        const mockBlob = new Blob(['content']);
+        fetchMock.mockResolvedValue({
+            ok: true,
+            blob: () => Promise.resolve(mockBlob),
+            headers: new Headers(),
+        });
+
+        await downloadFile('/api/files/document.pdf');
+
+        // Should not throw
+    });
+
+    it('throws when fetch fails', async () => {
+        fetchMock.mockResolvedValue({
+            ok: false,
+            status: 404,
+            statusText: 'Not Found',
+        });
+
+        await expect(downloadFile('/api/missing.pdf')).rejects.toThrow('Failed to fetch file: 404 Not Found');
+    });
+
+    it('throws for invalid URL', async () => {
+        await expect(downloadFile('')).rejects.toThrow(TypeError);
+        await expect(downloadFile(null as any)).rejects.toThrow(TypeError);
     });
 });
 

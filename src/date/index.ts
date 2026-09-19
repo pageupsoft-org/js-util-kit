@@ -8,3 +8,4 @@ export * from './format-date-time.js';
 export * from './get-end-of-day.js';
 export * from './get-start-of-day.js';
 export * from './is-weekend.js';
+export * from './parse-date.js';

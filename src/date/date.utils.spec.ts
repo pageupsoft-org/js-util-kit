@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals
 import {
     formatDate,
     formatDateTime,
+    parseDate,
     compareDatesIgnoringTime,
     isWeekend,
     addBusinessDays,
@@ -93,6 +94,83 @@ describe('formatDateTime', () => {
 
     it('returns empty string for null even with a custom format', () => {
         expect(formatDateTime(null, 'HH:mm:ss')).toBe('');
+    });
+});
+
+// ---------------------------------------------------------------------------
+// parseDate
+// ---------------------------------------------------------------------------
+
+describe('parseDate', () => {
+    it('parses DD/MM/YYYY format', () => {
+        const result = parseDate('30/07/2026', 'DD/MM/YYYY');
+        expect(result).toBeInstanceOf(Date);
+        expect(formatDate(result!)).toBe('2026-07-30');
+    });
+
+    it('parses MM/DD/YYYY format', () => {
+        const result = parseDate('07/30/2026', 'MM/DD/YYYY');
+        expect(result).toBeInstanceOf(Date);
+        expect(formatDate(result!)).toBe('2026-07-30');
+    });
+
+    it('parses YYYY-MM-DD format', () => {
+        const result = parseDate('2026-07-30', 'YYYY-MM-DD');
+        expect(result).toBeInstanceOf(Date);
+        expect(formatDate(result!)).toBe('2026-07-30');
+    });
+
+    it('parses date with time (YYYY-MM-DD HH:mm)', () => {
+        const result = parseDate('2026-07-30 14:05', 'YYYY-MM-DD HH:mm');
+        expect(result).toBeInstanceOf(Date);
+        expect(formatDateTime(result!)).toBe('2026-07-30 14:05:00');
+    });
+
+    it('parses 12-hour format with AM/PM', () => {
+        const result = parseDate('30/07/2026 02:05 PM', 'DD/MM/YYYY hh:mm A');
+        expect(result).toBeInstanceOf(Date);
+        expect(formatDateTime(result!)).toBe('2026-07-30 14:05:00');
+    });
+
+    it('parses lowercase am/pm', () => {
+        const result = parseDate('30/07/2026 02:05 pm', 'DD/MM/YYYY hh:mm a');
+        expect(result).toBeInstanceOf(Date);
+        expect(formatDateTime(result!)).toBe('2026-07-30 14:05:00');
+    });
+
+    it('returns undefined for invalid date string', () => {
+        expect(parseDate('invalid', 'YYYY-MM-DD')).toBeUndefined();
+    });
+
+    it('returns undefined for pattern mismatch', () => {
+        expect(parseDate('30-07-2026', 'YYYY-MM-DD')).toBeUndefined();
+    });
+
+    it('returns undefined for empty string', () => {
+        expect(parseDate('', 'YYYY-MM-DD')).toBeUndefined();
+    });
+
+    it('returns undefined for non-string input', () => {
+        expect(parseDate(null as any, 'YYYY-MM-DD')).toBeUndefined();
+        expect(parseDate(undefined as any, 'YYYY-MM-DD')).toBeUndefined();
+    });
+
+    it('handles single-digit month/day without padding (M, D)', () => {
+        const result = parseDate('7/5/2026', 'M/D/YYYY');
+        expect(result).toBeInstanceOf(Date);
+        expect(formatDate(result!)).toBe('2026-07-05');
+    });
+
+    it('handles 2-digit year (YY)', () => {
+        const result = parseDate('30/07/26', 'DD/MM/YY');
+        expect(result).toBeInstanceOf(Date);
+        expect(formatDate(result!)).toBe('2026-07-30');
+    });
+
+    it('handles single-digit hour (H, h)', () => {
+        const result = parseDate('2026-07-30 9:5', 'YYYY-MM-DD H:m');
+        expect(result).toBeInstanceOf(Date);
+        expect(formatDateTime(result!)).toBe('2026-07-30 09:05:00');
     });
 });
 

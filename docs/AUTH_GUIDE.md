@@ -1,20 +1,22 @@
 # Auth Utilities Guide
 
-Comprehensive guide for `js-util-kit` auth utilities (JWT-like tokens, password hashing, API keys).
+Comprehensive guide for `js-util-kit` auth utilities (JWT handling, API keys, password hashing).
 
 ## Overview
 
-The auth module provides utilities for secure token generation, password hashing, and verification. Works in both browser and Node.js.
+The auth module provides utilities for secure token generation, password hashing, JWT decoding, and verification. Works in both browser and Node.js.
 
 ## Exports
 
 | Function | Description | Use Case |
 |----------|-------------|----------|
 | `generateApiKey` | Generate secure API key | Server-to-server auth |
-| `hashPassword` | Hash password with bcrypt | User registration |
+| `hashPassword` | Hash password with PBKDF2 | User registration |
 | `verifyPassword` | Verify password against hash | User login |
 | `generateToken` | Generate JWT-like token | Session tokens |
-| `verifyToken` | Verify token signature | Auth middleware |
+| `verifyToken` | Verify token signature and expiry | Auth middleware |
+| `decodeJwt` | Decode JWT payload without verification | Client-side token inspection |
+| `isTokenExpired` | Check if JWT is expired | Token validation |
 
 ---
 
@@ -48,7 +50,7 @@ generateApiKey();
 
 // Custom prefix
 generateApiKey('sk');
-// 'sk_a1b2c3d4e5f6...'
+// 'sk_live_a1b2c3d4e5f6...'
 
 // No prefix
 generateApiKey('');
@@ -58,29 +60,21 @@ generateApiKey('');
 const keys = ['user1', 'user2', 'user3'].map(() => generateApiKey());
 ```
 
-**Format:** `<prefix>_live_<random_hex>` where random portion is 32 hex characters.
+**Format:** `<prefix>_live_<32_hex_chars>` where random portion is 16 bytes (32 hex characters).
 
 ---
 
 ### `hashPassword`
 
 ```typescript
-hashPassword(password: string, rounds?: number): Promise<string>
+hashPassword(password: string): Promise<string>
 ```
 
-**What:** Hashes a password using bcrypt with the specified number of rounds.
+**What:** Hashes a password using PBKDF2 with SHA-256 (100,000 iterations).
 
 **When:** User registration, password changes, credential migration.
 
-**Why:** Bcrypt is the industry standard for password hashing — slow by design, resistant to brute force.
-
-**Rounds Guide:**
-| Rounds | Time (approx) | Use Case |
-|--------|---------------|----------|
-| 10 | ~100ms | Development / testing |
-| 12 | ~400ms | Staging / low-security |
-| 14 | ~1.6s | **Production recommended** |
-| 16 | ~6.4s | High security |
+**Why:** PBKDF2 is a standard key derivation function — slow by design, resistant to brute force. No external dependencies.
 
 **Example:**
 ```typescript
@@ -91,7 +85,7 @@ async function registerUser(email: string, password: string): Promise<void> {
   if (password.length < 8) {
     throw new Error('Password must be at least 8 characters');
   }
-  const hash = await hashPassword(password, 14);
+  const hash = await hashPassword(password);
   // Store: { email, passwordHash: hash }
 }
 
@@ -103,6 +97,8 @@ async function loginUser(email: string, password: string): Promise<boolean> {
 }
 ```
 
+**Format:** `v=1$i=100000$base64salt$base64hash`
+
 ---
 
 ### `verifyPassword`
@@ -111,7 +107,7 @@ async function loginUser(email: string, password: string): Promise<boolean> {
 verifyPassword(password: string, hash: string): Promise<boolean>
 ```
 
-**What:** Verifies a plaintext password against a bcrypt hash.
+**What:** Verifies a plaintext password against a PBKDF2 hash.
 
 **When:** User login, password re-verification (before changing password).
 
@@ -121,7 +117,7 @@ verifyPassword(password: string, hash: string): Promise<boolean>
 ```typescript
 import { verifyPassword } from 'js-util-kit';
 
-const isValid = await verifyPassword('userPassword123', '$2b$14$...');
+const isValid = await verifyPassword('userPassword123', 'v=1$i=100000$...');
 // true or false
 ```
 
@@ -135,7 +131,7 @@ const isValid = await verifyPassword('userPassword123', '$2b$14$...');
 generateToken(payload: Record<string, unknown>, secret: string, expiresIn?: string): Promise<string>
 ```
 
-**What:** Generates a JWT-like signed token with expiration.
+**What:** Generates a JWT-like signed token with expiration using HS256.
 
 **When:** Session tokens, email verification tokens, password reset tokens.
 
@@ -173,7 +169,7 @@ verifyToken(token: string, secret: string): Promise<Record<string, unknown> | nu
 
 **What:** Verifies a token's signature and checks expiry. Returns payload if valid.
 
-**When:** Auth middleware, protecting API endpoints. Express route protection.
+**When:** Auth middleware, protecting API endpoints.
 
 **Why:** Validates token integrity and expiration in one call.
 
@@ -207,6 +203,53 @@ async function authMiddleware(req: Request, res: Response, next: NextFunction): 
 
 ---
 
+### `decodeJwt`
+
+```typescript
+decodeJwt(token: string | null | undefined): Record<string, unknown> | null
+```
+
+**What:** Decodes a JWT payload without verifying its signature.
+
+**⚠️ SECURITY WARNING:** This function does not validate or verify token integrity. It only decodes payload claims for client-side convenience and must not be used as a trust or authorization check.
+
+**When:** Client-side token inspection, extracting user info from token for UI display.
+
+**Example:**
+```typescript
+import { decodeJwt } from 'js-util-kit';
+
+decodeJwt('eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.signature'); // => { sub: '123' }
+decodeJwt(null); // null
+```
+
+---
+
+### `isTokenExpired`
+
+```typescript
+isTokenExpired(token: string | null | undefined, clockSkewSeconds?: number): boolean
+```
+
+**What:** Returns whether a JWT should be treated as expired by checking the `exp` claim.
+
+**When:** Quick client-side expiry checks, conditional UI rendering.
+
+**Why:** Fail-safe behavior — malformed tokens, missing/invalid `exp`, or uncertain cases are treated as expired.
+
+**Example:**
+```typescript
+import { isTokenExpired } from 'js-util-kit';
+
+isTokenExpired('eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjQxMDAwMDAwMDB9.signature'); // => false
+isTokenExpired(expiredToken); // => true
+isTokenExpired(null); // => true
+```
+
+**Clock Skew:** Optional `clockSkewSeconds` parameter to tolerate clock differences between client and server.
+
+---
+
 ## Common Patterns
 
 ### Complete Registration Flow
@@ -216,7 +259,7 @@ import { hashPassword, generateToken, verifyToken } from 'js-util-kit';
 class AuthService {
   async register(email: string, password: string): Promise<{ userId: string; token: string }> {
     // 1. Hash password
-    const passwordHash = await hashPassword(password, 14);
+    const passwordHash = await hashPassword(password);
 
     // 2. Save user
     const user = await this.db.createUser(email, passwordHash);
@@ -290,7 +333,7 @@ async function resetPassword(token: string, newPassword: string): Promise<void> 
     throw new Error('Invalid or expired reset token');
   }
 
-  const hash = await hashPassword(newPassword, 14);
+  const hash = await hashPassword(newPassword);
   await db.updateUserPassword(payload.userId as string, hash);
 }
 ```
@@ -302,7 +345,11 @@ async function resetPassword(token: string, newPassword: string): Promise<void> 
 | Function | Browser | Node.js | Dependencies |
 |----------|---------|---------|--------------|
 | `generateApiKey` | Yes | Yes | Web Crypto / Node crypto |
-| `hashPassword` | Yes | Yes | bcrypt (bundled / native) |
-| `verifyPassword` | Yes | Yes | bcrypt (bundled / native) |
+| `hashPassword` | Yes | Yes | Web Crypto / Node crypto |
+| `verifyPassword` | Yes | Yes | Web Crypto / Node crypto |
 | `generateToken` | Yes | Yes | Web Crypto / Node crypto |
 | `verifyToken` | Yes | Yes | Web Crypto / Node crypto |
+| `decodeJwt` | Yes | Yes | None |
+| `isTokenExpired` | Yes | Yes | None |
+
+All functions are **pure** and have **zero external dependencies**.
