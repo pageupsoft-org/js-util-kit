@@ -25,10 +25,14 @@ The number module provides type-safe utilities for formatting, clamping, calcula
 ### `clamp`
 
 ```typescript
-clamp(value: number, min: number, max: number): number
+clamp(
+  value: number | null | undefined,
+  min: number,
+  max: number
+): number | null
 ```
 
-**What:** Restricts a number to a range `[min, max]`.
+**What:** Clamps a number within a `[min, max]` range. If `min` is greater than `max`, the two are silently swapped before clamping.
 
 **When:** Slider inputs, rating systems, API parameter validation, pagination.
 
@@ -42,32 +46,29 @@ import { clamp } from 'js-util-kit';
 clamp(7, 1, 5);    // 5 (capped at max)
 clamp(-2, 1, 5);   // 1 (floored at min)
 clamp(3, 1, 5);    // 3 (within range)
-clamp(0, 1, 5);    // 1 (exact min)
-clamp(5, 1, 5);    // 5 (exact max)
 
-// API pagination
-const page = clamp(req.query.page ?? 1, 1, 100);
+// Min/max swap
+clamp(5, 10, 0);   // 5 (range swapped to [0, 10])
 
-// RGB color values
-const r = clamp(255 + 50, 0, 255); // 255
-const g = clamp(-10, 0, 255);      // 0
-
-// Edge cases
-clamp(3, 3, 3);    // 3 (min === max)
-clamp(5, 10, 1);   // 1 (min > max, returns min effectively via clamping)
+// Null handling
+clamp(null, 0, 10);      // null
+clamp(undefined, 0, 10); // null
+clamp(NaN, 0, 10);       // null
+clamp(Infinity, 0, 10);  // null
 ```
-
-**Throws:** `TypeError` if any argument is not a finite number.
 
 ---
 
 ### `roundToDecimalPlaces`
 
 ```typescript
-roundToDecimalPlaces(value: number, decimalPlaces: number, roundingMode?: 'half-up' | 'half-down' | 'half-even' | 'floor' | 'ceil'): number
+roundToDecimalPlaces(
+  value: number | null | undefined,
+  places: number
+): number | null
 ```
 
-**What:** Rounds to a specified number of decimal places.
+**What:** Rounds a number to a specified number of decimal places using `Math.round`.
 
 **When:** Currency display, measurement precision, scientific notation, financial calculations.
 
@@ -78,49 +79,35 @@ roundToDecimalPlaces(value: number, decimalPlaces: number, roundingMode?: 'half-
 import { roundToDecimalPlaces } from 'js-util-kit';
 
 // Basic rounding
-roundToDecimalPlaces(3.14159, 2);              // 3.14
-roundToDecimalPlaces(3.145, 2);                // 3.15
-roundToDecimalPlaces(2.555, 2);                // 2.56
-roundToDecimalPlaces(0.1 + 0.2, 2);           // 0.3 (not 0.30000000000000004)
+roundToDecimalPlaces(3.14159, 2);   // 3.14
+roundToDecimalPlaces(3.7, 0);       // 4
+roundToDecimalPlaces(0.1 + 0.2, 2); // 0.3
 
-// Zero decimal places
-roundToDecimalPlaces(3.5, 0);                  // 4
-roundToDecimalPlaces(3.14159, 0);            // 3
+// Null handling
+roundToDecimalPlaces(null, 2);      // null
+roundToDecimalPlaces(NaN, 2);       // null
+roundToDecimalPlaces(Infinity, 2);  // null
 
-// Negative decimal places (round to tens/hundreds)
-roundToDecimalPlaces(1542, -2);               // 1500
-roundToDecimalPlaces(1542, -3);               // 2000
-
-// Rounding modes
-roundToDecimalPlaces(2.55, 1, 'half-up');     // 2.6
-roundToDecimalPlaces(2.55, 1, 'half-down');   // 2.5
-roundToDecimalPlaces(2.55, 1, 'half-even');   // 2.6
-roundToDecimalPlaces(2.55, 1, 'floor');       // 2.5
-roundToDecimalPlaces(2.55, 1, 'ceil');        // 2.6
-
-// Financial (half-even = banker's rounding)
-roundToDecimalPlaces(1.005, 2, 'half-even'); // 1.00 (rounds to even)
-roundToDecimalPlaces(1.015, 2, 'half-even'); // 1.02 (rounds to even)
+// Throws RangeError for invalid places
+roundToDecimalPlaces(3.14, -1);     // RangeError
+roundToDecimalPlaces(3.14, NaN);    // RangeError
 ```
 
-**Defaults:** `decimalPlaces = 0`, `roundingMode = 'half-up'`.
+**Throws:** `RangeError` when `places` is not a finite, non-negative number.
 
 ---
 
 ### `formatCurrency`
 
 ```typescript
-formatCurrency(amount: number, options?: CurrencyOptions): string
-interface CurrencyOptions {
-  locale?: string;       // default: 'en-US'
-  currency?: string;     // default: 'USD'
-  minimumFractionDigits?: number;
-  maximumFractionDigits?: number;
-  style?: 'currency' | 'decimal';
-}
+formatCurrency(
+  value: number | null | undefined,
+  currencyCode: string,
+  locale = 'en-US'
+): string
 ```
 
-**What:** Formats a number as a locale-aware currency string.
+**What:** Formats a number as a currency string using the native `Intl.NumberFormat` API.
 
 **When:** Pricing display, invoicing, financial reports, e-commerce.
 
@@ -131,46 +118,40 @@ interface CurrencyOptions {
 import { formatCurrency } from 'js-util-kit';
 
 // Default (USD, en-US)
-formatCurrency(1999.99);                    // '$1,999.99'
-formatCurrency(0);                          // '$0.00'
-formatCurrency(-50);                        // '-$50.00'
+formatCurrency(1234.56, 'USD');          // '$1,234.56'
+formatCurrency(0, 'USD');                // '$0.00'
+formatCurrency(-50, 'USD');              // '-$50.00'
 
 // Japanese Yen
-formatCurrency(1999, { currency: 'JPY', locale: 'ja-JP' });   // '￥1,999'
+formatCurrency(1999, 'JPY', 'ja-JP');    // '￥1,999'
 
 // Euro (Germany)
-formatCurrency(1999.99, { currency: 'EUR', locale: 'de-DE' }); // '1.999,99 €'
+formatCurrency(1999.99, 'EUR', 'de-DE'); // '1.999,99 €'
 
-// British Pound
-formatCurrency(99.95, { currency: 'GBP', locale: 'en-GB' });   // '£99.95'
+// Null handling
+formatCurrency(null, 'USD');             // ''
+formatCurrency(NaN, 'USD');              // ''
+formatCurrency(Infinity, 'USD');         // ''
 
-// No fraction digits
-formatCurrency(1999.99, { maximumFractionDigits: 0 }); // '$2,000'
-
-// Compact format
-formatCurrency(1500000, { currency: 'USD', notation: 'compact' }); // varies by Intl support
-
-// Zero and negative
-formatCurrency(0);     // '$0.00'
-formatCurrency(-42.5); // '-$42,50'
+// Invalid currency code
+formatCurrency(100, 'INVALID');          // ''
 ```
 
-**Note:** Uses `Intl.NumberFormat` internally. Falls back to basic `$N,NNN.NN` format if unavailable.
+**Note:** Uses `Intl.NumberFormat` internally. Returns empty string for null/undefined/non-finite values or invalid currency codes.
 
 ---
 
 ### `formatPercentage`
 
 ```typescript
-formatPercentage(value: number, options?: PercentageOptions): string
-interface PercentageOptions {
-  decimals?: number;    // default: 0 (no decimal places)
-  suffix?: string;      // default: '%'
-  locale?: string;      // default: undefined
-}
+formatPercentage(
+  value: number | null | undefined,
+  decimalPlaces = 2,
+  locale = 'en-US'
+): string
 ```
 
-**What:** Formats a decimal (0-1) or ratio as a percentage string.
+**What:** Formats a number as a percentage string using the native `Intl.NumberFormat` API. The input is expected on a **0–100 scale** (e.g. pass `25` to display `'25.00%'`).
 
 **When:** Progress bars, test scores, survey results, statistics.
 
@@ -180,38 +161,39 @@ interface PercentageOptions {
 ```typescript
 import { formatPercentage } from 'js-util-kit';
 
-// Basic usage (0-1 scale)
-formatPercentage(0.856);                     // '86%'
-formatPercentage(0.5);                       // '50%'
-formatPercentage(1);                         // '100%'
-formatPercentage(0);                         // '0%'
+// Basic usage (0-100 scale)
+formatPercentage(25.5);         // '25.50%'
+formatPercentage(100);          // '100.00%'
+formatPercentage(0);            // '0.00%'
 
-// Decimals
-formatPercentage(0.12345, { decimals: 2 });  // '12.35%'
+// Custom decimals
+formatPercentage(25.5, 0);      // '26%'
+formatPercentage(25.5, 3);      // '25.500%'
 
-// Custom suffix
-formatPercentage(0.42, { suffix: ' percent' }); // '42 percent'
+// Null handling
+formatPercentage(null);         // ''
+formatPercentage(NaN);          // ''
+formatPercentage(Infinity);     // ''
 
-// Ratio (0-100 scale)
-formatPercentage(73, { decimals: 1 });       // '73.0%'
-
-// Edge cases
-formatPercentage(1.2);                         // '120%'
-formatPercentage(-0.05);                      // '-5%'
-formatPercentage(0.001, { decimals: 3 });     // '0.100%'
+// Throws RangeError for invalid decimalPlaces
+formatPercentage(25, -1);       // RangeError
+formatPercentage(25, NaN);      // RangeError
 ```
 
-**Note:** By default expects values 0-1 (decimal form). Multiply by 100 for ratio form or use `{ decimals }` appropriately.
+**Throws:** `RangeError` when `decimalPlaces` is not a finite, non-negative number.
 
 ---
 
 ### `calculatePercentage`
 
 ```typescript
-calculatePercentage(part: number, total: number, options?: { decimals?: number }): number
+calculatePercentage(
+  part: number | null | undefined,
+  total: number | null | undefined
+): number | null
 ```
 
-**What:** Calculates part/total × 100, rounded to specified decimals.
+**What:** Calculates what percentage `part` is of `total` on a 0–100 scale. Returns `0` when `total` is `0` to avoid division by zero.
 
 **When:** Analytics (conversion rate), progress (items completed), statistics.
 
@@ -222,21 +204,21 @@ calculatePercentage(part: number, total: number, options?: { decimals?: number }
 import { calculatePercentage } from 'js-util-kit';
 
 // Basic
-calculatePercentage(25, 100);                 // 25
-calculatePercentage(1, 3, { decimals: 2 });  // 33.33
+calculatePercentage(25, 100);   // 25
+calculatePercentage(1, 3);      // 33.333...
 
 // Progress
-calculatePercentage(7, 10);                  // 70
-calculatePercentage(0, 10);                  // 0
-calculatePercentage(10, 10);                 // 100
+calculatePercentage(7, 10);     // 70
+calculatePercentage(0, 10);     // 0
+calculatePercentage(10, 10);    // 100
 
-// Large numbers
-calculatePercentage(1250, 5000);             // 25
+// Division by zero guard
+calculatePercentage(5, 0);      // 0
 
-// Edge cases
-calculatePercentage(0, 1000);                // 0
-calculatePercentage(1000, 0);               // Infinity (throws RangeError if total === 0)
-calculatePercentage(5, 10, { decimals: 0 }); // 50
+// Null handling
+calculatePercentage(null, 100); // null
+calculatePercentage(25, null);  // null
+calculatePercentage(NaN, 100);  // null
 ```
 
 ---
@@ -244,10 +226,10 @@ calculatePercentage(5, 10, { decimals: 0 }); // 50
 ### `isNumeric`
 
 ```typescript
-isNumeric(value: unknown): boolean
+isNumeric(value: number | null | undefined): boolean
 ```
 
-**What:** Checks if a value is a finite number (not `NaN`, `Infinity`, strings, objects).
+**What:** Returns `true` when the value is a finite, non-NaN number. `Infinity`, `-Infinity`, and `NaN` are considered non-numeric.
 
 **When:** Input validation before mathematical operations, type narrowing.
 
@@ -257,20 +239,15 @@ isNumeric(value: unknown): boolean
 ```typescript
 import { isNumeric } from 'js-util-kit';
 
-isNumeric(42);                          // true
-isNumeric(3.14);                        // true
-isNumeric(-1);                          // true
-isNumeric(0);                           // true
-isNumeric(NaN);                          // false
-isNumeric(Infinity);                     // false
-isNumeric(-Infinity);                    // false
-isNumeric('42');                         // false
-isNumeric('3.14');                       // false
-isNumeric(null);                         // false
-isNumeric(undefined);                    // false
-isNumeric({});                           // false
-isNumeric([]);                           // false
-isNumeric(new Number(42));               // false
+isNumeric(42);        // true
+isNumeric(3.14);      // true
+isNumeric(0);         // true
+isNumeric(-1);        // true
+isNumeric(NaN);       // false
+isNumeric(Infinity);  // false
+isNumeric(-Infinity); // false
+isNumeric(null);      // false
+isNumeric(undefined); // false
 ```
 
 ---
@@ -278,32 +255,31 @@ isNumeric(new Number(42));               // false
 ### `randomNumber`
 
 ```typescript
-randomNumber(min: number, max: number, options?: { inclusive?: boolean }): number
+randomNumber(min: number, max: number): number
 ```
 
-**What:** Generates a cryptographically random number in `[min, max]`.
+**What:** Generates a random integer in the range `[min, max]` (inclusive) using `Math.random()`.
 
-**When:** Random sampling, demo data, games, A/B test assignment.
+**When:** Random sampling, demo data, games, test data generation.
 
-**Why:** `Math.random()` is not cryptographically secure.
+**Why:** Convenient bounded random number generation for non-security use cases.
+
+**Security:** Uses `Math.random()` and is **not** cryptographically secure. Do not use for tokens, passwords, or any security-sensitive randomness — use `generateUuid` or `generateApiKey` instead.
 
 **Example:**
 ```typescript
 import { randomNumber } from 'js-util-kit';
 
 // Integer (1-6, simulating a die)
-randomNumber(1, 6, { inclusive: true });       // e.g., 4
+randomNumber(1, 6);              // e.g., 4
 
-// Float (0-1)
-randomNumber(0, 1);                              // e.g., 0.7382...
-
-// Random index into array
-const arr = ['a', 'b', 'c', 'd', 'e'];
-const index = randomNumber(0, arr.length - 1, { inclusive: true });
+// Random index
+const arr = ['a', 'b', 'c', 'd'];
+const index = randomNumber(0, arr.length - 1);
 arr[index];
 
 // Random percentage
-randomNumber(0, 100, { inclusive: true });       // e.g., 42
+randomNumber(0, 100);            // e.g., 42
 ```
 
 ---
@@ -400,4 +376,4 @@ renderProgressBar(0, 10);     // '[░░░░░░░░░░░░] 0%'
 | `formatPercentage` | ✅ | ✅ | None |
 | `calculatePercentage` | ✅ | ✅ | None |
 | `isNumeric` | ✅ | ✅ | None |
-| `randomNumber` | ✅ | ✅ | Web Crypto / Node crypto |
+| `randomNumber` | ✅ | ✅ | None (`Math.random()`, not cryptographically secure) |

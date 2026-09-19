@@ -8,6 +8,9 @@ export {
     downloadBlob
 } from './download-blob.js';
 export {
+    downloadFile
+} from './download-file.js';
+export {
     isMobileDevice
 } from './is-mobile-device.js';
 export {

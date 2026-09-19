@@ -27,11 +27,11 @@ The object module provides type-safe utilities for deep cloning, merging, pickin
 deepClone<T>(value: T): T
 ```
 
-**What:** Creates a deep copy of any value, including objects with circular references.
+**What:** Creates a deep copy of a value using `structuredClone` when available (Node.js ≥ 17, modern browsers). Falls back to `JSON.parse(JSON.stringify(value))` in older environments.
 
 **When:** State snapshots, undo/redo stacks, immutable updates, cloning config objects.
 
-**Why:** Structured cloning (`structuredClone`) is not available in all environments. `JSON.parse(JSON.stringify())` loses types, Date, RegExp, Map, Set, etc.
+**Why:** Provides consistent deep cloning across environments. `structuredClone` preserves more types than JSON serialization.
 
 **Example:**
 ```typescript
@@ -40,40 +40,40 @@ import { deepClone } from 'js-util-kit';
 const original = {
   name: 'config',
   nested: { value: 42, items: [1, 2, 3] },
-  date: new Date('2026-07-30'),
-  regex: /test/gi,
 };
 
 const clone = deepClone(original);
 clone.nested.value = 99;
-clone.date.setFullYear(2027);
 
 original.nested.value; // 42 (unchanged)
-original.date.getFullYear(); // 2026 (unchanged)
 
-// Circular references
-const circular: any = { name: 'root' };
-circular.self = circular;
-const clonedCircular = deepClone(circular);
-console.log(clonedCircular.self === clonedCircular); // true (preserved)
+// Arrays
+const arr = [1, { a: 2 }, [3, 4]];
+const clonedArr = deepClone(arr);
 
-// Arrays and Maps
-deepClone(new Map([['key', 'value']]));
-deepClone(new Set([1, 2, 3]));
-deepClone([1, { a: 2 }, [3, 4]]);
+// Primitives and null/undefined
+deepClone(null);      // null
+deepClone(undefined); // undefined
+deepClone(42);        // 42
+deepClone('text');    // 'text'
 ```
 
-**Preserves:** `Date`, `RegExp`, `Map`, `Set`, `ArrayBuffer`, `TypedArray`, `URL`, `URLSearchParams`, circular references, prototypes (via `Object.create`).
+**Preserves (in structuredClone environments):** `Date`, `Map`, `Set`, `RegExp`, `ArrayBuffer`, `TypedArray`, circular references.
+
+**Fallback Limitations (JSON-based):** Does not preserve `Date` objects (converted to strings), `undefined` values, `Map`, `Set`, `RegExp`, or circular references.
 
 ---
 
 ### `mergeObjects`
 
 ```typescript
-mergeObjects<T extends Record<string, unknown>>(...objects: (T | undefined | null)[]): T
+mergeObjects<T extends object, S extends object>(
+  target: T | null | undefined,
+  source: S | null | undefined
+): T & S
 ```
 
-**What:** Deep merges multiple objects into one. Later objects override earlier ones.
+**What:** Deep-merges `source` into `target` and returns a new object without mutating either input. When the same key holds a plain object in both inputs, the objects are merged recursively.
 
 **When:** Config composition, applying defaults over user preferences, combining settings.
 
@@ -85,53 +85,47 @@ import { mergeObjects } from 'js-util-kit';
 
 const defaults = {
   theme: 'light',
-  font: { size: 14, family: 'Arial', weight: 'normal' },
+  font: { size: 14, family: 'Arial' },
   notifications: { email: true, push: false },
 };
 
 const userPrefs = {
   theme: 'dark',
-  font: { size: 16, weight: 'bold' },
+  font: { size: 16 },
 };
 
 const config = mergeObjects(defaults, userPrefs);
 // {
-//   theme: 'dark',                // overridden
-//   font: { size: 16, family: 'Arial', weight: 'bold' }, // deep merged
-//   notifications: { email: true, push: false }, // preserved
+//   theme: 'dark',                              // overridden
+//   font: { size: 16, family: 'Arial' },        // deep merged
+//   notifications: { email: true, push: false } // preserved
 // }
+
+// Null/undefined handling
+mergeObjects(null, { a: 1 });  // { a: 1 }
+mergeObjects({ a: 1 }, null);  // { a: 1 }
+mergeObjects(null, null);      // {}
 ```
 
 **Merge Rules:**
-- Primitives: later value wins
-- Objects: deep recursive merge
-- Arrays: later array replaces earlier (no concatenation)
-- `null`/`undefined` sources are skipped
+- Primitives: source value wins
+- Plain objects: deep recursive merge
+- Arrays: source array replaces target (no concatenation)
+- `null`/`undefined` inputs are treated as `{}`
 - Original objects are not mutated (pure function)
-
-```typescript
-// Safe defaults pattern
-function createConfig(userInput: Record<string, unknown>) {
-  return mergeObjects(
-    {
-      timeout: 30000,
-      retries: 3,
-      logging: { level: 'info', pretty: false },
-    },
-    userInput,
-  );
-}
-```
 
 ---
 
 ### `pick`
 
 ```typescript
-pick<T extends Record<string, unknown>, K extends keyof T>(obj: T, keys: readonly K[]): Pick<T, K>
+pick<T extends object, K extends keyof T>(
+  obj: T | null | undefined,
+  keys: readonly K[]
+): Pick<T, K>
 ```
 
-**What:** Creates a new object with only the specified keys.
+**What:** Returns a new object containing only the specified keys from `obj`.
 
 **When:** Selecting fields for API responses, creating subsets of large objects, DTO mapping.
 
@@ -146,24 +140,15 @@ const user = {
   name: 'John Doe',
   email: 'john@example.com',
   password: 'secret',
-  ssn: '123-45-6789',
   role: 'admin',
-  createdAt: new Date(),
 };
 
-// Safe: TypeScript enforces the keys exist on user
 const publicProfile = pick(user, ['id', 'name', 'email', 'role']);
 // { id: 'u-123', name: 'John Doe', email: 'john@example.com', role: 'admin' }
 
-// Empty keys list returns empty object
-pick(user, []); // {}
-
-// Non-existent key (TypeScript error at compile time)
-// pick(user, ['nonexistent']); // ❌ Compile error
-
-// Works with interfaces
-interface UserDTO { id: string; name: string; email: string; }
-const dto = pick(user, ['id', 'name', 'email']) as UserDTO;
+// Null handling
+pick(null, ['id']);  // {}
+pick(user, []);      // {}
 ```
 
 ---
@@ -171,12 +156,15 @@ const dto = pick(user, ['id', 'name', 'email']) as UserDTO;
 ### `omit`
 
 ```typescript
-omit<T extends Record<string, unknown>, K extends keyof T>(obj: T, keys: readonly K[]): Omit<T, K>
+omit<T extends object, K extends keyof T>(
+  obj: T | null | undefined,
+  keys: readonly K[]
+): Omit<T, K>
 ```
 
-**What:** Creates a new object without the specified keys. Opposite of `pick`.
+**What:** Returns a new object with the specified keys excluded from `obj`. Opposite of `pick`.
 
-**When:** Stripping sensitive data before logging, removing internal fields for API responses, sanitizing request payloads.
+**When:** Stripping sensitive data before logging, removing internal fields for API responses.
 
 **Why:** Cleaner than manually destructuring or filtering keys.
 
@@ -190,16 +178,14 @@ const internal = {
   email: 'john@example.com',
   passwordHash: '$2b$12$...',
   apiKey: 'sk-abc123',
-  ssn: '123-45-6789',
 };
 
-// Remove sensitive fields before logging
-const safe = omit(internal, ['passwordHash', 'apiKey', 'ssn']);
+// Remove sensitive fields
+const safe = omit(internal, ['passwordHash', 'apiKey']);
 // { id: 'u-123', name: 'John Doe', email: 'john@example.com' }
 
-// Sanitize for API response (remove internal fields)
-const apiResponse = omit(internal, ['passwordHash']);
-// { id: 'u-123', name: 'John Doe', email: 'john@example.com', apiKey: 'sk-abc123', ssn: '123-45-6789' }
+// Null handling
+omit(null, ['password']);  // {}
 ```
 
 ---
@@ -210,47 +196,48 @@ const apiResponse = omit(internal, ['passwordHash']);
 isEqual(a: unknown, b: unknown): boolean
 ```
 
-**What:** Deep equality check supporting circular references, `Date`, `RegExp`, `Map`, `Set`, typed arrays.
+**What:** Performs a recursive deep equality check between two values. Uses value semantics: two `Date` objects with the same timestamp are equal, and two plain objects with the same keys and values are equal regardless of reference identity.
 
 **When:** Detecting state changes, memoization, testing, diffing.
 
 **Why:** `===` only checks reference equality; `JSON.stringify` loses type fidelity and fails on circular refs.
+
+**Supports:** Primitives, `null`, `undefined`, `Date`, `Array`, and plain objects. Circular references are handled safely.
+
+**Does not support:** `Map`, `Set`, `RegExp`, or class instances with custom equality (these are compared by reference only).
 
 **Example:**
 ```typescript
 import { isEqual } from 'js-util-kit';
 
 // Primitives
-isEqual(1, 1);                     // true
-isEqual('a', 'a');                 // true
-isEqual(null, null);               // true
-isEqual(0, -0);                    // false (distinguishes -0 from +0)
-isEqual(NaN, NaN);                 // true (matches JSON.stringify behavior)
+isEqual(1, 1);           // true
+isEqual('a', 'a');       // true
+isEqual(null, null);     // true
 
 // Objects
-isEqual({ a: 1, b: 2 }, { a: 1, b: 2 });     // true
-isEqual({ a: 1 }, { a: 1, b: 2 });            // false
-isEqual({ a: { b: { c: 3 } } }, { a: { b: { c: 3 } } }); // true (deep)
+isEqual({ a: 1, b: 2 }, { a: 1, b: 2 });  // true
+isEqual({ a: 1 }, { a: 1, b: 2 });        // false
+isEqual({ a: { b: { c: 3 } } }, { a: { b: { c: 3 } } }); // true
 
 // Arrays
-isEqual([1, 2, 3], [1, 2, 3]);               // true
-isEqual([1, 2], [1, 2, 3]);                  // false
-isEqual([1, 2, 3], [1, 3, 2]);               // false (order matters)
+isEqual([1, 2, 3], [1, 2, 3]);  // true
+isEqual([1, 2], [1, 2, 3]);     // false
 
 // Date
 isEqual(new Date('2026-01-01'), new Date('2026-01-01')); // true
 
-// Map and Set
-isEqual(new Map([['a', 1]]), new Map([['a', 1]])); // true
-isEqual(new Set([1, 2, 3]), new Set([1, 2, 3]));   // true
+// Map/Set compared by reference only
+const map = new Map([['a', 1]]);
+isEqual(map, map);                               // true
+isEqual(new Map([['a', 1]]), new Map([['a', 1]])); // false
 
 // Circular references
 const a: any = { name: 'root' };
 a.self = a;
 const b: any = { name: 'root' };
 b.self = b;
-isEqual(a, b);          // true (circular refs handled)
-isEqual(a, { name: 'root' }); // false (different structure)
+isEqual(a, b); // true
 ```
 
 ---
@@ -258,21 +245,16 @@ isEqual(a, { name: 'root' }); // false (different structure)
 ### `removeEmptyProperties`
 
 ```typescript
-removeEmptyProperties<T extends Record<string, unknown>>(obj: T, options?: RemoveOptions): Partial<T>
-interface RemoveOptions {
-  removeNull?: boolean;      // default: true
-  removeUndefined?: boolean;  // default: true
-  removeEmptyString?: boolean; // default: true
-  removeZero?: boolean;       // default: false
-  removeNaN?: boolean;       // default: false
-}
+removeEmptyProperties<T extends object>(
+  obj: T | null | undefined
+): Partial<T>
 ```
 
-**What:** Removes properties with empty/nullish/falsy values from an object.
+**What:** Returns a shallow copy of an object with all "empty" properties removed. A property is considered **empty** when its value is strictly `null`, `undefined`, or an empty string (`''`).
 
-**When:** Cleanup API payloads before sending to database, reducing object size, preparing clean query params.
+**When:** Cleanup API payloads before sending, reducing object size, preparing clean query params.
 
-**Why:** Many databases/ORMs fail on null/undefined keys or ignore them unexpectedly.
+**Why:** All other falsy values — `0`, `false`, `NaN`, and empty arrays or objects — are retained.
 
 **Example:**
 ```typescript
@@ -285,27 +267,16 @@ const dirty = {
   address: undefined,
   age: 0,
   active: false,
-  nickname: '   ',
 };
 
-// Default (removes null, undefined, empty string)
 removeEmptyProperties(dirty);
 // { name: 'John', age: 0, active: false }
 
-// Preserve zeros (useful for numeric fields)
-removeEmptyProperties(dirty, { removeZero: false });
-// { name: 'John', age: 0, active: false }
+// Null handling
+removeEmptyProperties(null);  // {}
 
-// Keep empty strings as placeholders
-removeEmptyProperties(dirty, { removeEmptyString: false });
-// { name: 'John', email: '', age: 0, active: false }
-
-// Remove ALL falsy values including false
-removeEmptyProperties(dirty, { removeZero: true, removeNaN: true });
-// { name: 'John' }
-
-// Note: '   ' (whitespace-only string) is NOT removed by default
-// Use with trim + removeEmptyString for whitespace removal
+// Only owns enumerable string-keyed properties are inspected
+// Nested objects are not recursively pruned
 ```
 
 ---
@@ -393,7 +364,8 @@ function useDeepCompareMemo<T>(factory: () => T, deps: unknown[]): T {
 
 ### Clean Query Params
 ```typescript
-import { removeEmptyProperties, buildQueryString } from 'js-util-kit';
+import { removeEmptyProperties } from 'js-util-kit';
+import { buildQueryString } from 'js-util-kit';
 
 function buildSearchParams(filters: Record<string, unknown>): string {
   const cleaned = removeEmptyProperties(filters);

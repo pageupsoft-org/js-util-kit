@@ -862,6 +862,39 @@ describe('createHttpLogSink', () => {
         await sink.shutdown();
     });
 
+    it('does not leave a dangling persistence timer after shutdown() resolves', async () => {
+        const saveCalls: number[] = [];
+
+        const sink = createHttpLogSink({
+            url: 'https://logs.example.com/events',
+            batchSize: 10,
+            persistence: {
+                saveQueue: (events) => {
+                    saveCalls.push(events.length);
+                },
+                saveDebounceMs: 20,
+            },
+            fetchLike: async () => ({ ok: true, status: 200 }),
+        });
+
+        sink.emit({
+            timestamp: '2026-01-01T00:00:00.000Z',
+            level: 'info',
+            message: 'persisted event',
+        });
+
+        await sink.shutdown();
+        const callsRightAfterShutdown = saveCalls.length;
+        expect(callsRightAfterShutdown).toBeGreaterThan(0);
+
+        // Wait well past the debounce window; before the fix, flush()'s internal
+        // schedulePersistence() call re-armed a timer during shutdown() that fired
+        // after shutdown() had already resolved, causing an extra save here.
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        expect(saveCalls.length).toBe(callsRightAfterShutdown);
+    });
+
     it('stops accepting emits after shutdown', async () => {
         const sent: string[] = [];
         const sink = createHttpLogSink({
@@ -1122,6 +1155,37 @@ describe('createHttpLogSink', () => {
         expect(flattened).toContain('cid-2');
 
         await sink.shutdown();
+    });
+
+    it('falls back to a default correlation id instead of rejecting flush() when correlationIdFactory throws', async () => {
+        const requestHeaders: Array<Record<string, string> | undefined> = [];
+
+        const sink = createHttpLogSink({
+            url: 'https://logs.example.com/events',
+            batchSize: 10,
+            correlationIdFactory: () => {
+                throw new Error('factory exploded');
+            },
+            fetchLike: async (_url, init) => {
+                requestHeaders.push(init.headers);
+                return { ok: true, status: 200 };
+            },
+        });
+
+        sink.emit({
+            timestamp: '2026-01-01T00:00:00.000Z',
+            level: 'info',
+            message: 'still logs',
+        });
+
+        await expect(sink.flush()).resolves.toBeUndefined();
+
+        expect(requestHeaders).toHaveLength(1);
+        expect(requestHeaders[0]?.['x-log-correlation-id']).toEqual(
+            expect.stringMatching(/^[0-9a-z]+-[0-9a-z]+$/)
+        );
+
+        await expect(sink.shutdown()).resolves.toBeUndefined();
     });
 
     it('supports pluggable trace metadata in serialization context and payload', async () => {

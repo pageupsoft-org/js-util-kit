@@ -2,13 +2,13 @@
 
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import {
-    downloadFile,
     getFileExtension,
     formatFileSize,
     convertFileToBase64,
 } from './index.js';
+import { downloadBlob } from '../browser/index.js';
 
-describe('downloadFile', () => {
+describe('downloadBlob', () => {
     beforeEach(() => {
         jest.restoreAllMocks();
         document.body.innerHTML = '';
@@ -31,7 +31,7 @@ describe('downloadFile', () => {
     it('triggers a download for valid input', () => {
         const clickSpy = jest.spyOn(HTMLAnchorElement.prototype, 'click');
 
-        const result = downloadFile(new Blob(['hello']), 'hello.txt');
+        const result = downloadBlob(new Blob(['hello']), 'hello.txt');
 
         expect(result).toBe(true);
         expect(clickSpy).toHaveBeenCalled();
@@ -40,14 +40,14 @@ describe('downloadFile', () => {
     });
 
     it('handles empty data blobs', () => {
-        const result = downloadFile(new Blob([]), 'empty.txt');
+        const result = downloadBlob(new Blob([]), 'empty.txt');
         expect(result).toBe(true);
     });
 
     it('returns false for invalid input', () => {
-        expect(downloadFile(null, 'x.txt')).toBe(false);
-        expect(downloadFile(undefined, 'x.txt')).toBe(false);
-        expect(downloadFile(new Blob(['x']), '')).toBe(false);
+        expect(downloadBlob(null, 'x.txt')).toBe(false);
+        expect(downloadBlob(undefined, 'x.txt')).toBe(false);
+        expect(downloadBlob(new Blob(['x']), '')).toBe(false);
     });
 });
 

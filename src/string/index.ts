@@ -1,6 +1,7 @@
 export * from './capitalize.js';
 export * from './capitalize-first-letter.js';
 export * from './generate-random-string.js';
+export * from './generate-uuid.js';
 export * from './is-null-or-whitespace.js';
 export * from './mask-sensitive-data.js';
 export * from './remove-extra-whitespaces.js';

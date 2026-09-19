@@ -1,10 +1,11 @@
 /** @jest-environment jsdom */
 
-import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import {
     copyToClipboard,
     openInNewTab,
     downloadBlob,
+    downloadFile,
     isMobileDevice,
     isTouchDevice,
     scrollToElement,
@@ -137,6 +138,84 @@ describe('downloadBlob', () => {
     });
 });
 
+describe('downloadFile', () => {
+    let fetchMock: any;
+
+    beforeEach(() => {
+        fetchMock = jest.fn();
+        Object.defineProperty(globalThis, 'fetch', {
+            configurable: true,
+            writable: true,
+            value: fetchMock,
+        });
+        jest.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test-url');
+        jest.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+        jest.spyOn(document.body, 'appendChild').mockImplementation((node) => node);
+        jest.spyOn(document.body, 'removeChild').mockImplementation((node) => node);
+        jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+
+    it('downloads a file and triggers download', async () => {
+        const mockBlob = new Blob(['content'], { type: 'application/pdf' });
+        fetchMock.mockResolvedValue({
+            ok: true,
+            blob: () => Promise.resolve(mockBlob),
+            headers: new Headers(),
+        });
+
+        await downloadFile('/api/file.pdf', 'test.pdf');
+
+        expect(fetchMock).toHaveBeenCalledWith('/api/file.pdf');
+    });
+
+    it('extracts filename from Content-Disposition header', async () => {
+        const mockBlob = new Blob(['content']);
+        const headers = new Headers();
+        headers.set('content-disposition', 'attachment; filename="server-file.pdf"');
+        fetchMock.mockResolvedValue({
+            ok: true,
+            blob: () => Promise.resolve(mockBlob),
+            headers,
+        });
+
+        await downloadFile('/api/file.pdf');
+
+        // Should not throw
+    });
+
+    it('falls back to URL-based filename when no header', async () => {
+        const mockBlob = new Blob(['content']);
+        fetchMock.mockResolvedValue({
+            ok: true,
+            blob: () => Promise.resolve(mockBlob),
+            headers: new Headers(),
+        });
+
+        await downloadFile('/api/files/document.pdf');
+
+        // Should not throw
+    });
+
+    it('throws when fetch fails', async () => {
+        fetchMock.mockResolvedValue({
+            ok: false,
+            status: 404,
+            statusText: 'Not Found',
+        });
+
+        await expect(downloadFile('/api/missing.pdf')).rejects.toThrow('Failed to fetch file: 404 Not Found');
+    });
+
+    it('throws for invalid URL', async () => {
+        await expect(downloadFile('')).rejects.toThrow(TypeError);
+        await expect(downloadFile(null as any)).rejects.toThrow(TypeError);
+    });
+});
+
 describe('isMobileDevice', () => {
     it('returns true for a mobile user agent', () => {
         Object.defineProperty(navigator, 'userAgent', {
@@ -163,6 +242,87 @@ describe('isMobileDevice', () => {
         });
 
         expect(isMobileDevice()).toBe(false);
+    });
+
+    it('returns true for Android devices', () => {
+        Object.defineProperty(navigator, 'userAgent', {
+            configurable: true,
+            value: 'Mozilla/5.0 (Linux; Android 10; SM-G973F)',
+        });
+
+        expect(isMobileDevice()).toBe(true);
+    });
+
+    it('returns true for iPad', () => {
+        Object.defineProperty(navigator, 'userAgent', {
+            configurable: true,
+            value: 'Mozilla/5.0 (iPad; CPU OS 13_3 like Mac OS X)',
+        });
+
+        expect(isMobileDevice()).toBe(true);
+    });
+
+    it('returns true for iPod', () => {
+        Object.defineProperty(navigator, 'userAgent', {
+            configurable: true,
+            value: 'Mozilla/5.0 (iPod touch; CPU iPhone 12_0 like Mac OS X)',
+        });
+
+        expect(isMobileDevice()).toBe(true);
+    });
+
+    it('returns true for BlackBerry', () => {
+        Object.defineProperty(navigator, 'userAgent', {
+            configurable: true,
+            value: 'Mozilla/5.0 (BlackBerry; U; BlackBerry 9900)',
+        });
+
+        expect(isMobileDevice()).toBe(true);
+    });
+
+    it('returns true for Opera Mini', () => {
+        Object.defineProperty(navigator, 'userAgent', {
+            configurable: true,
+            value: 'Opera/9.80 (J2ME/MIDP; Opera Mini/9.80)',
+        });
+
+        expect(isMobileDevice()).toBe(true);
+    });
+
+    it('returns true for IEMobile', () => {
+        Object.defineProperty(navigator, 'userAgent', {
+            configurable: true,
+            value: 'Mozilla/5.0 (compatible; MSIE 10.0; Windows Phone 8.0; IEMobile/10.0)',
+        });
+
+        expect(isMobileDevice()).toBe(true);
+    });
+
+    it('returns true for webOS', () => {
+        Object.defineProperty(navigator, 'userAgent', {
+            configurable: true,
+            value: 'Mozilla/5.0 (webOS/1.4.0; U; en-US) AppleWebKit/532.2',
+        });
+
+        expect(isMobileDevice()).toBe(true);
+    });
+
+    it('is case-insensitive for mobile detection', () => {
+        Object.defineProperty(navigator, 'userAgent', {
+            configurable: true,
+            value: 'mozilla iphone android',
+        });
+
+        expect(isMobileDevice()).toBe(true);
+    });
+
+    it('detects mobile in mixed case user agent strings', () => {
+        Object.defineProperty(navigator, 'userAgent', {
+            configurable: true,
+            value: 'ANDROID device',
+        });
+
+        expect(isMobileDevice()).toBe(true);
     });
 });
 
@@ -200,6 +360,98 @@ describe('isTouchDevice', () => {
         });
 
         expect(isTouchDevice()).toBe(false);
+    });
+
+    it('returns true when maxTouchPoints is 1 (single touch)', () => {
+        Object.defineProperty(navigator, 'maxTouchPoints', {
+            configurable: true,
+            value: 1,
+        });
+
+        expect(isTouchDevice()).toBe(true);
+    });
+
+    it('returns true when maxTouchPoints is 10 (multi-touch)', () => {
+        Object.defineProperty(navigator, 'maxTouchPoints', {
+            configurable: true,
+            value: 10,
+        });
+
+        expect(isTouchDevice()).toBe(true);
+    });
+
+    it('returns false when maxTouchPoints is exactly 0', () => {
+        Object.defineProperty(window, 'ontouchstart', {
+            configurable: true,
+            value: undefined,
+        });
+        Object.defineProperty(navigator, 'maxTouchPoints', {
+            configurable: true,
+            value: 0,
+        });
+
+        expect(isTouchDevice()).toBe(false);
+    });
+
+    it('returns false when maxTouchPoints is negative', () => {
+        Object.defineProperty(window, 'ontouchstart', {
+            configurable: true,
+            value: undefined,
+        });
+        Object.defineProperty(navigator, 'maxTouchPoints', {
+            configurable: true,
+            value: -1,
+        });
+
+        expect(isTouchDevice()).toBe(false);
+    });
+
+    it('returns false when maxTouchPoints is not a number', () => {
+        Object.defineProperty(window, 'ontouchstart', {
+            configurable: true,
+            value: undefined,
+        });
+        Object.defineProperty(navigator, 'maxTouchPoints', {
+            configurable: true,
+            value: undefined,
+        });
+
+        expect(isTouchDevice()).toBe(false);
+    });
+
+    it('returns true when both ontouchstart and maxTouchPoints are present', () => {
+        Object.defineProperty(window, 'ontouchstart', {
+            configurable: true,
+            value: jest.fn(),
+        });
+        Object.defineProperty(navigator, 'maxTouchPoints', {
+            configurable: true,
+            value: 5,
+        });
+
+        expect(isTouchDevice()).toBe(true);
+    });
+
+    it('returns true when ontouchstart is null (not undefined)', () => {
+        Object.defineProperty(window, 'ontouchstart', {
+            configurable: true,
+            value: null,
+        });
+        Object.defineProperty(navigator, 'maxTouchPoints', {
+            configurable: true,
+            value: 0,
+        });
+
+        expect(isTouchDevice()).toBe(true);
+    });
+
+    it('handles ontouchstart as an empty function', () => {
+        Object.defineProperty(window, 'ontouchstart', {
+            configurable: true,
+            value: () => {},
+        });
+
+        expect(isTouchDevice()).toBe(true);
     });
 });
 

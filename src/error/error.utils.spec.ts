@@ -52,6 +52,47 @@ describe('normalizeError', () => {
 
         expect(normalized.context).toEqual({ requestId: 'req-1' });
     });
+
+    it('does not throw for a self-referential native Error cause', () => {
+        const error: Error & { cause?: unknown } = new Error('Outer');
+        error.cause = error;
+
+        expect(() => normalizeError(error)).not.toThrow();
+        const normalized = normalizeError(error);
+        expect(() => JSON.stringify(normalized)).not.toThrow();
+    });
+
+    it('does not throw and produces a JSON-safe result for a self-referential envelope-shaped cause', () => {
+        const envelopeLike: Record<string, unknown> = {
+            name: 'RemoteError',
+            message: 'Request failed',
+            timestamp: '2026-01-01T00:00:00.000Z',
+        };
+        envelopeLike.cause = envelopeLike;
+
+        expect(() => normalizeError(envelopeLike)).not.toThrow();
+        const normalized = normalizeError(envelopeLike);
+        expect(() => JSON.stringify(normalized)).not.toThrow();
+    });
+
+    it('does not throw for two mutually circular envelope-shaped causes', () => {
+        const envelopeA: Record<string, unknown> = {
+            name: 'ErrorA',
+            message: 'A failed',
+            timestamp: '2026-01-01T00:00:00.000Z',
+        };
+        const envelopeB: Record<string, unknown> = {
+            name: 'ErrorB',
+            message: 'B failed',
+            timestamp: '2026-01-01T00:00:00.000Z',
+        };
+        envelopeA.cause = envelopeB;
+        envelopeB.cause = envelopeA;
+
+        expect(() => normalizeError(envelopeA)).not.toThrow();
+        const normalized = normalizeError(envelopeA);
+        expect(() => JSON.stringify(normalized)).not.toThrow();
+    });
 });
 
 describe('isErrorEnvelope', () => {

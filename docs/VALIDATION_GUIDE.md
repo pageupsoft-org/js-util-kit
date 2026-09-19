@@ -10,19 +10,19 @@ The validation module provides type-safe, zero-dependency validators for common 
 
 | Function | Purpose |
 |----------|---------|
-| `isValidEmail` | RFC 5322 compliant email validation |
-| `isValidPhoneNumber` | E.164 phone number validation |
-| `isValidUrl` | URL format validation |
+| `isValidEmail` | Practical email validation (not full RFC 5322) |
+| `isValidPhoneNumber` | Phone number validation (international/e164/national formats) |
+| `isValidUrl` | Absolute HTTP/HTTPS URL validation |
 | `isStrongPassword` | Configurable password strength checking |
-| `validateFileSize` | File size limit validation |
-| `validateFileExtension` | File extension allowlist validation |
+| `validateFileSize` | File/blob size limit validation |
+| `validateFileExtension` | Filename extension allowlist validation |
 
 ---
 
 ## 1. isValidEmail
 
 ### What it does
-Validates email addresses against RFC 5322 specification with practical adjustments for real-world usage.
+Validates email addresses using a practical regex. Intentionally does not fully implement RFC 5322. For example, quoted local parts and comments are not supported.
 
 ### When to use
 - User registration forms
@@ -31,10 +31,10 @@ Validates email addresses against RFC 5322 specification with practical adjustme
 - API request validation
 
 ### Why to use
-- More accurate than regex-only solutions
-- Handles edge cases (quoted strings, comments, internationalized domains)
+- Good balance of accuracy and simplicity
+- Handles common email formats
 - Zero dependencies, fast execution
-- TypeScript narrows type on `true` return
+- Returns false for null/undefined/empty strings
 
 ### How to use
 ```typescript
@@ -50,18 +50,15 @@ if (isValidEmail(email)) {
 ### Example code
 ```typescript
 const testCases = [
-  'user@example.com',           // true
-  'user.name@domain.org',       // true
-  'user+tag@example.co.uk',     // true
-  'user@sub.domain.example.com', // true
-  '"quoted@string"@example.com', // true (RFC 5322)
-  'user@[IPv6:2001:db8::1]',    // true (IP literal)
-  'invalid',                     // false
-  'user@',                       // false
-  '@example.com',                // false
-  'user@.com',                   // false
-  'user@domain..com',            // false
-  'user name@example.com',       // false (space not quoted)
+  'user@example.com',              // true
+  'user.name@domain.org',          // true
+  'user+tag@example.co.uk',        // true
+  'user@sub.domain.example.com',   // true
+  'invalid',                       // false
+  'user@',                         // false
+  '@example.com',                  // false
+  'user name@example.com',         // false (space)
+  null,                            // false
 ];
 
 testCases.forEach(email => {
@@ -75,14 +72,11 @@ user@example.com: true
 user.name@domain.org: true
 user+tag@example.co.uk: true
 user@sub.domain.example.com: true
-"quoted@string"@example.com: true
-user@[IPv6:2001:db8::1]: true
 invalid: false
 user@: false
 @example.com: false
-user@.com: false
-user@domain..com: false
 user name@example.com: false
+null: false
 ```
 
 ---
@@ -90,7 +84,7 @@ user name@example.com: false
 ## 2. isValidPhoneNumber
 
 ### What it does
-Validates phone numbers in E.164 international format (+CC NNN NNN NNNN).
+Validates phone numbers in multiple formats: international (default), e164, or national.
 
 ### When to use
 - User profile phone fields
@@ -99,18 +93,28 @@ Validates phone numbers in E.164 international format (+CC NNN NNN NNNN).
 - CRM data validation
 
 ### Why to use
-- Strict E.164 compliance (global standard)
-- Rejects ambiguous local formats
-- Handles country codes 1-3 digits
+- Supports 3 format modes: international, e164, national
+- Handles common separators (spaces, parentheses, hyphens, dots)
+- 7-15 digit range validation
 - No external libphonenumber dependency
 
 ### How to use
 ```typescript
 import { isValidPhoneNumber } from 'js-util-kit';
 
-const phone = '+15551234567';
-if (isValidPhoneNumber(phone)) {
+const phone = '+1 (415) 555-2671';
+if (isValidPhoneNumber(phone)) {  // defaults to 'international' format
   await sendSMS(phone, 'Your code: 123456');
+}
+
+// Strict E.164 format
+if (isValidPhoneNumber('+15551234567', 'e164')) {
+  // Only +[1-9]\d{1,14} passes
+}
+
+// National format (no + required)
+if (isValidPhoneNumber('(415) 555-2671', 'national')) {
+  // Valid
 }
 ```
 

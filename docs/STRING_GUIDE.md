@@ -12,16 +12,17 @@ npm install js-util-kit
 
 | Function | Description | Use Case |
 |----------|-------------|----------|
-| `capitalize` | Capitalize first letter of each word | Names, titles |
-| `capitalizeFirstLetter` | Capitalize only first letter | Sentences |
-| `truncateText` | Truncate with ellipsis | Previews, cards |
-| `toTitleCase` | Convert to Title Case | Headings |
-| `maskSensitiveData` | Mask cards, SSN, emails | Logging, UI |
+| `capitalize` | Capitalize first character of string (rest unchanged) | Sentences |
+| `capitalizeFirstLetter` | Capitalize only first letter | Sentences (same as capitalize) |
+| `truncateText` | Truncate with ellipsis at word boundary | Previews, cards |
+| `toTitleCase` | Convert to Title Case (capitalize each word) | Headings |
+| `maskSensitiveData` | Mask all but last N characters | Logging, UI |
 | `sanitizeFilename` | Safe filename from string | File uploads |
-| `removeSpecialCharacters` | Remove non-alphanumeric | Slugs, IDs |
+| `removeSpecialChar` | Remove non-alphanumeric characters | Slugs, IDs |
 | `removeExtraWhitespaces` | Normalize whitespace | User input |
 | `isNullOrWhitespace` | Check empty/whitespace | Validation |
-| `generateRandomString` | Crypto-secure random string | Tokens, IDs |
+| `generateRandomString` | Random string (NOT crypto-secure) | Test data, non-secret IDs |
+| `generateUuid` | Cryptographically secure UUID v4 | IDs, tokens |
 
 ---
 
@@ -30,34 +31,34 @@ npm install js-util-kit
 ### `capitalize`
 
 ```typescript
-capitalize(str: string): string
+capitalize(value: string | null | undefined): string
 ```
 
-**What:** Capitalizes the first letter of each word.
+**What:** Capitalizes the first character of the string, leaving the remainder unchanged.
 
-**When:** Display names, titles, headings from user input.
+**When:** Sentence case, first letter of a paragraph.
 
-**Why:** Consistent capitalization regardless of user entry style.
+**Why:** Preserves original casing of rest of string.
+
+**Note:** This only uppercases the first character of the whole string — it does not capitalize each word. For per-word capitalization use `toTitleCase`.
 
 **Example:**
 ```typescript
 import { capitalize } from 'js-util-kit';
 
-capitalize('john doe');           // 'John Doe'
-capitalize('MARY JANE');          // 'Mary Jane'
-capitalize('van der waals');      // 'Van Der Waals'
-capitalize('o\'connor');          // 'O\'Connor'
-capitalize('');                   // ''
+capitalize('hello world');     // 'Hello world'
+capitalize('HELLO WORLD');     // 'HELLO WORLD' (rest unchanged)
+capitalize('hello');           // 'Hello'
+capitalize('');                // ''
+capitalize(null);              // ''
 ```
-
-**Output:** Each word's first letter uppercase, rest lowercase. Words split by whitespace.
 
 ---
 
 ### `capitalizeFirstLetter`
 
 ```typescript
-capitalizeFirstLetter(str: string): string
+capitalizeFirstLetter(value: string | null | undefined): string
 ```
 
 **What:** Capitalizes only the first character of the string.
@@ -74,9 +75,8 @@ capitalizeFirstLetter('hello world');     // 'Hello world'
 capitalizeFirstLetter('HELLO WORLD');     // 'HELLO WORLD'
 capitalizeFirstLetter('hello');           // 'Hello'
 capitalizeFirstLetter('');                // ''
+capitalizeFirstLetter(null);              // ''
 ```
-
-**Output:** First character uppercase, remainder unchanged.
 
 ---
 
@@ -221,28 +221,27 @@ sanitizeFilename('café.pdf');                           // 'caf_.pdf'
 
 ---
 
-### `removeSpecialCharacters`
+### `removeSpecialChar`
 
 ```typescript
-removeSpecialCharacters(str: string, allowSpaces?: boolean): string
+removeSpecialChar(value: string | null | undefined): string
 ```
 
-**What:** Removes non-alphanumeric characters (optionally keeps spaces).
+**What:** Removes all non-alphanumeric characters (keeps letters and digits only).
 
-**When:** Generating slugs, IDs, search keys, normalized comparison.
+**When:** Generating slugs, sanitizing user input, creating IDs.
 
-**Why:** Creates predictable, safe strings from user input.
+**Why:** Simple clean-up without regex knowledge.
 
 **Example:**
 ```typescript
-import { removeSpecialCharacters } from 'js-util-kit';
+import { removeSpecialChar } from 'js-util-kit';
 
-removeSpecialCharacters('Hello, World!');        // 'HelloWorld'
-removeSpecialCharacters('Hello, World!', true);  // 'Hello World'
-removeSpecialCharacters('user@domain.com');      // 'userdomaincom'
-removeSpecialCharacters('Price: $19.99');        // 'Price1999'
-removeSpecialCharacters('Café résumé');          // 'Caf rsum' (accents removed)
-removeSpecialCharacters('αβγ123');               // 'αβγ123' (unicode letters kept)
+removeSpecialChar('Hello, World!');    // 'HelloWorld'
+removeSpecialChar('user@domain.com');  // 'userdomaincom'
+removeSpecialChar('Price: $19.99');    // 'Price1999'
+removeSpecialChar('');                  // ''
+removeSpecialChar(null);                // ''
 ```
 
 ---
@@ -305,11 +304,11 @@ isNullOrWhitespace('  hello  ');     // false
 generateRandomString(length: number, charset?: string): string
 ```
 
-**What:** Cryptographically secure random string (uses `crypto.getRandomValues`).
+**What:** Generates a random string using `Math.random()`.
 
-**When:** API keys, session IDs, CSRF tokens, temporary passwords, unique IDs.
+**When:** Test fixtures, mock data, non-secret display IDs, sampling. For API keys, session IDs, CSRF tokens, or passwords, use `generateUuid` (Web Crypto-based) instead.
 
-**Why:** `Math.random()` is predictable; this uses Web Crypto API / Node crypto.
+**Why:** Convenient random-string generation with a configurable charset for non-security use cases.
 
 **Example:**
 ```typescript
@@ -329,7 +328,7 @@ generateRandomString(43, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01
 // Repeatable for testing (seed not supported - use jest mock)
 ```
 
-**Security:** Uses `crypto.getRandomValues()` (browser) or `crypto.randomBytes()` (Node). Suitable for secrets.
+**Security:** Uses `Math.random()` and is **not** cryptographically secure. Do not use for passwords, tokens, session IDs, or any other secret — use `generateUuid` instead.
 
 ---
 
@@ -352,12 +351,15 @@ formatDisplayName(null);               // 'Anonymous'
 
 ### Slug Generator
 ```typescript
-import { toTitleCase, removeSpecialCharacters, removeExtraWhitespaces } from 'js-util-kit';
+import { removeSpecialChar, removeExtraWhitespaces } from 'js-util-kit';
 
 function generateSlug(title: string): string {
-  const cleaned = removeExtraWhitespaces(title.toLowerCase());
-  const noSpecial = removeSpecialCharacters(cleaned, true);
-  return noSpecial.split(' ').join('-');
+  // Since removeSpecialChar removes all non-alphanumeric including spaces,
+  // use a different approach
+  return removeExtraWhitespaces(title.toLowerCase())
+    .replace(/[^a-z0-9\s-]/g, '')  // Remove special chars but keep spaces and hyphens
+    .trim()
+    .replace(/\s+/g, '-');          // Replace spaces with hyphens
 }
 
 generateSlug('  My Blog Post: "Hello World!"  '); // 'my-blog-post-hello-world'
@@ -410,9 +412,10 @@ function processUpload(file: File): { safeName: string } | { error: string } {
 | `toTitleCase` | ✅ | ✅ | None |
 | `maskSensitiveData` | ✅ | ✅ | None |
 | `sanitizeFilename` | ✅ | ✅ | None |
-| `removeSpecialCharacters` | ✅ | ✅ | None |
+| `removeSpecialChar` | ✅ | ✅ | None |
 | `removeExtraWhitespaces` | ✅ | ✅ | None |
 | `isNullOrWhitespace` | ✅ | ✅ | None |
-| `generateRandomString` | ✅ | ✅ | Web Crypto / Node crypto |
+| `generateRandomString` | ✅ | ✅ | None (`Math.random()`, not cryptographically secure) |
+| `generateUuid` | ✅ | ✅ | Web Crypto API (cryptographically secure) |
 
 All functions are **pure**, **synchronous**, and **zero-dependency**.

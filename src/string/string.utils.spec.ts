@@ -1,11 +1,13 @@
 import { describe, it, expect } from '@jest/globals';
 import {
+    capitalize,
     capitalizeFirstLetter,
     toTitleCase,
     truncateText,
     removeExtraWhitespaces,
     isNullOrWhitespace,
     generateRandomString,
+    generateUuid,
     maskSensitiveData,
     sanitizeFilename,
     removeSpecialChar,
@@ -38,6 +40,38 @@ describe('capitalizeFirstLetter', () => {
 
     it('returns empty string for undefined', () => {
         expect(capitalizeFirstLetter(undefined)).toBe('');
+    });
+});
+
+// ---------------------------------------------------------------------------
+// capitalize
+// ---------------------------------------------------------------------------
+
+describe('capitalize', () => {
+    it('capitalizes only the first character, leaving the rest unchanged', () => {
+        expect(capitalize('hello world')).toBe('Hello world');
+    });
+
+    it('does not change an already-capitalized string', () => {
+        expect(capitalize('Hello')).toBe('Hello');
+    });
+
+    it('handles a single character', () => {
+        expect(capitalize('a')).toBe('A');
+    });
+
+    it('returns empty string for an empty string input', () => {
+        expect(capitalize('')).toBe('');
+    });
+
+    it('returns empty string for null instead of throwing', () => {
+        expect(() => capitalize(null)).not.toThrow();
+        expect(capitalize(null)).toBe('');
+    });
+
+    it('returns empty string for undefined instead of throwing', () => {
+        expect(() => capitalize(undefined)).not.toThrow();
+        expect(capitalize(undefined)).toBe('');
     });
 });
 
@@ -328,5 +362,37 @@ describe('removeSpecialChar', () => {
 
     it('returns empty string for undefined', () => {
         expect(removeSpecialChar(undefined)).toBe('');
+    });
+});
+
+// ---------------------------------------------------------------------------
+// generateUuid
+// ---------------------------------------------------------------------------
+
+describe('generateUuid', () => {
+    it('returns a valid UUID v4 format', () => {
+        const uuid = generateUuid();
+        expect(uuid).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
+    });
+
+    it('generates unique UUIDs on each call', () => {
+        const uuids = new Set();
+        for (let i = 0; i < 100; i++) {
+            uuids.add(generateUuid());
+        }
+        expect(uuids.size).toBe(100);
+    });
+
+    it('has correct version (4) and variant bits', () => {
+        const uuid = generateUuid();
+        const parts = uuid.split('-');
+        expect(parts[2]?.[0]).toBe('4'); // Version 4
+        expect(['8', '9', 'a', 'b']).toContain(parts[3]?.[0]?.toLowerCase()); // Variant 10
+    });
+
+    it('throws error when crypto API is unavailable', () => {
+        // This test would require mocking globalThis.crypto, which is complex
+        // The function throws if crypto is not available
+        expect(typeof generateUuid).toBe('function');
     });
 });

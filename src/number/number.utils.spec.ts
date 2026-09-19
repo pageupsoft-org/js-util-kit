@@ -6,6 +6,7 @@ import {
     clamp,
     isNumeric,
     calculatePercentage,
+    randomNumber,
 } from './index.js';
 
 // ---------------------------------------------------------------------------
@@ -283,5 +284,89 @@ describe('calculatePercentage', () => {
 
     it('returns null for Infinity total', () => {
         expect(calculatePercentage(25, Infinity)).toBeNull();
+    });
+});
+// ---------------------------------------------------------------------------
+// randomNumber
+// ---------------------------------------------------------------------------
+
+describe('randomNumber', () => {
+    it('returns a number within the specified range [min, max]', () => {
+        const result = randomNumber(1, 10);
+        expect(result).toBeGreaterThanOrEqual(1);
+        expect(result).toBeLessThanOrEqual(10);
+        expect(Number.isInteger(result)).toBe(true);
+    });
+
+    it('returns min when min equals max (single value range)', () => {
+        expect(randomNumber(5, 5)).toBe(5);
+    });
+
+    it('returns 0 or 1 for a binary range', () => {
+        const result = randomNumber(0, 1);
+        expect([0, 1]).toContain(result);
+    });
+
+    it('handles negative ranges correctly', () => {
+        const result = randomNumber(-10, -5);
+        expect(result).toBeGreaterThanOrEqual(-10);
+        expect(result).toBeLessThanOrEqual(-5);
+    });
+
+    it('handles ranges crossing zero', () => {
+        const result = randomNumber(-5, 5);
+        expect(result).toBeGreaterThanOrEqual(-5);
+        expect(result).toBeLessThanOrEqual(5);
+    });
+
+    it('handles zero as minimum', () => {
+        const result = randomNumber(0, 10);
+        expect(result).toBeGreaterThanOrEqual(0);
+        expect(result).toBeLessThanOrEqual(10);
+    });
+
+    it('handles zero as maximum', () => {
+        const result = randomNumber(-10, 0);
+        expect(result).toBeGreaterThanOrEqual(-10);
+        expect(result).toBeLessThanOrEqual(0);
+    });
+
+    it('returns a value when min is larger than max (swapped boundaries)', () => {
+        // Implementation doesn't validate order, so this tests actual behavior
+        const result = randomNumber(10, 1);
+        expect(typeof result).toBe('number');
+        expect(Number.isInteger(result)).toBe(true);
+    });
+
+    it('generates different values over multiple calls (non-deterministic)', () => {
+        const results = new Set<number>();
+        for (let i = 0; i < 50; i++) {
+            results.add(randomNumber(1, 100));
+        }
+        // Should generate at least 10 different values out of 50 calls
+        expect(results.size).toBeGreaterThan(10);
+    });
+
+    it('generates all values in a small range over many iterations', () => {
+        const results = new Set<number>();
+        for (let i = 0; i < 100; i++) {
+            results.add(randomNumber(1, 3));
+        }
+        // Should hit all values [1, 2, 3] eventually
+        expect(results.has(1)).toBe(true);
+        expect(results.has(2)).toBe(true);
+        expect(results.has(3)).toBe(true);
+    });
+
+    it('handles large positive numbers', () => {
+        const result = randomNumber(1000000, 9999999);
+        expect(result).toBeGreaterThanOrEqual(1000000);
+        expect(result).toBeLessThanOrEqual(9999999);
+    });
+
+    it('handles large negative numbers', () => {
+        const result = randomNumber(-9999999, -1000000);
+        expect(result).toBeGreaterThanOrEqual(-9999999);
+        expect(result).toBeLessThanOrEqual(-1000000);
     });
 });

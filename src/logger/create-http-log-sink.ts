@@ -598,6 +598,9 @@ export function createHttpLogSink(options: HttpLogSinkOptions): HttpLogSink {
 
     const schedulePersistence = (): void => {
         if (typeof options.persistence?.saveQueue !== 'function') return;
+        // Once shutdown has begun, `shutdown()` owns the final persistence write;
+        // arming a new timer here would outlive the resolved shutdown() promise.
+        if (isShutdown) return;
 
         if (persistTimer != null) {
             clearTimeout(persistTimer);
@@ -641,7 +644,7 @@ export function createHttpLogSink(options: HttpLogSinkOptions): HttpLogSink {
                 const batch = queue.splice(0, Math.min(batchSize, queue.length));
                 emitQueueDepthChange();
                 const batchStart = Date.now();
-                const correlationId = correlationIdFactory();
+                const correlationId = _safeCorrelationId(correlationIdFactory);
                 flushCorrelationIds.push(correlationId);
                 const baseSerializationContext: Omit<HttpBatchSerializationContext, 'traceMetadata'> = {
                     correlationId,
@@ -1653,6 +1656,15 @@ function _getTraceMetadata(
 
 function _defaultCorrelationIdFactory(): string {
     return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+// A throwing user-supplied `correlationIdFactory` must not break the flush loop.
+function _safeCorrelationId(factory: () => string): string {
+    try {
+        return factory();
+    } catch {
+        return _defaultCorrelationIdFactory();
+    }
 }
 
 function _isValidRequestBody(body: unknown): body is string | Uint8Array | ArrayBuffer {
