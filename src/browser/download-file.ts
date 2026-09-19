@@ -6,6 +6,8 @@ import { downloadBlob } from './download-blob.js';
  * @param url - The URL to fetch the file from.
  * @param filename - Optional custom filename for the download.
  * @returns A promise that resolves when the download is triggered.
+ * @throws {TypeError} When `url` is not a non-empty string.
+ * @throws {Error} When called outside a browser environment (no `window`/`document`).
  *
  * @example
  * await downloadFile('/api/reports/invoice-123.pdf', 'invoice.pdf');
@@ -17,6 +19,9 @@ import { downloadBlob } from './download-blob.js';
 export async function downloadFile(url: string, filename?: string): Promise<void> {
     if (!url || typeof url !== 'string') {
         throw new TypeError('URL must be a non-empty string');
+    }
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+        throw new Error('downloadFile is only available in a browser environment.');
     }
 
     const response = await fetch(url);

@@ -598,6 +598,9 @@ export function createHttpLogSink(options: HttpLogSinkOptions): HttpLogSink {
 
     const schedulePersistence = (): void => {
         if (typeof options.persistence?.saveQueue !== 'function') return;
+        // Once shutdown has begun, `shutdown()` owns the final persistence write;
+        // arming a new timer here would outlive the resolved shutdown() promise.
+        if (isShutdown) return;
 
         if (persistTimer != null) {
             clearTimeout(persistTimer);

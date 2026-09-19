@@ -155,6 +155,32 @@ describe('isEqual', () => {
         expect(() => isEqual(a, b)).not.toThrow();
         expect(isEqual(a, b)).toBe(true);
     });
+
+    it('returns false for two distinct Map instances even with identical entries', () => {
+        expect(isEqual(new Map([['a', 1]]), new Map([['a', 1]]))).toBe(false);
+    });
+
+    it('returns false for two distinct Map instances with different entries', () => {
+        expect(isEqual(new Map([['a', 1]]), new Map([['b', 2]]))).toBe(false);
+    });
+
+    it('returns true for the same Map instance compared to itself', () => {
+        const m = new Map([['a', 1]]);
+        expect(isEqual(m, m)).toBe(true);
+    });
+
+    it('returns false for two distinct Set instances even with identical members', () => {
+        expect(isEqual(new Set([1, 2, 3]), new Set([1, 2, 3]))).toBe(false);
+    });
+
+    it('returns false for two distinct RegExp instances even with identical source/flags', () => {
+        expect(isEqual(/abc/gi, /abc/gi)).toBe(false);
+    });
+
+    it('returns true for the same RegExp instance compared to itself', () => {
+        const r = /abc/gi;
+        expect(isEqual(r, r)).toBe(true);
+    });
 });
 
 // ---------------------------------------------------------------------------

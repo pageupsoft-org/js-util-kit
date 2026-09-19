@@ -862,6 +862,39 @@ describe('createHttpLogSink', () => {
         await sink.shutdown();
     });
 
+    it('does not leave a dangling persistence timer after shutdown() resolves', async () => {
+        const saveCalls: number[] = [];
+
+        const sink = createHttpLogSink({
+            url: 'https://logs.example.com/events',
+            batchSize: 10,
+            persistence: {
+                saveQueue: (events) => {
+                    saveCalls.push(events.length);
+                },
+                saveDebounceMs: 20,
+            },
+            fetchLike: async () => ({ ok: true, status: 200 }),
+        });
+
+        sink.emit({
+            timestamp: '2026-01-01T00:00:00.000Z',
+            level: 'info',
+            message: 'persisted event',
+        });
+
+        await sink.shutdown();
+        const callsRightAfterShutdown = saveCalls.length;
+        expect(callsRightAfterShutdown).toBeGreaterThan(0);
+
+        // Wait well past the debounce window; before the fix, flush()'s internal
+        // schedulePersistence() call re-armed a timer during shutdown() that fired
+        // after shutdown() had already resolved, causing an extra save here.
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        expect(saveCalls.length).toBe(callsRightAfterShutdown);
+    });
+
     it('stops accepting emits after shutdown', async () => {
         const sent: string[] = [];
         const sink = createHttpLogSink({

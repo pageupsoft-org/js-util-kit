@@ -1,5 +1,6 @@
 import { describe, it, expect } from '@jest/globals';
 import {
+    capitalize,
     capitalizeFirstLetter,
     toTitleCase,
     truncateText,
@@ -39,6 +40,38 @@ describe('capitalizeFirstLetter', () => {
 
     it('returns empty string for undefined', () => {
         expect(capitalizeFirstLetter(undefined)).toBe('');
+    });
+});
+
+// ---------------------------------------------------------------------------
+// capitalize
+// ---------------------------------------------------------------------------
+
+describe('capitalize', () => {
+    it('capitalizes only the first character, leaving the rest unchanged', () => {
+        expect(capitalize('hello world')).toBe('Hello world');
+    });
+
+    it('does not change an already-capitalized string', () => {
+        expect(capitalize('Hello')).toBe('Hello');
+    });
+
+    it('handles a single character', () => {
+        expect(capitalize('a')).toBe('A');
+    });
+
+    it('returns empty string for an empty string input', () => {
+        expect(capitalize('')).toBe('');
+    });
+
+    it('returns empty string for null instead of throwing', () => {
+        expect(() => capitalize(null)).not.toThrow();
+        expect(capitalize(null)).toBe('');
+    });
+
+    it('returns empty string for undefined instead of throwing', () => {
+        expect(() => capitalize(undefined)).not.toThrow();
+        expect(capitalize(undefined)).toBe('');
     });
 });
 

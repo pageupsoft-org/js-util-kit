@@ -210,7 +210,7 @@ const apiResponse = omit(internal, ['passwordHash']);
 isEqual(a: unknown, b: unknown): boolean
 ```
 
-**What:** Deep equality check supporting circular references, `Date`, `RegExp`, `Map`, `Set`, typed arrays.
+**What:** Deep equality check supporting circular references, `Date`, arrays, and plain objects. `Map`, `Set`, and `RegExp` are compared by reference only (not deeply) — two distinct instances are never equal even with identical contents.
 
 **When:** Detecting state changes, memoization, testing, diffing.
 
@@ -240,9 +240,11 @@ isEqual([1, 2, 3], [1, 3, 2]);               // false (order matters)
 // Date
 isEqual(new Date('2026-01-01'), new Date('2026-01-01')); // true
 
-// Map and Set
-isEqual(new Map([['a', 1]]), new Map([['a', 1]])); // true
-isEqual(new Set([1, 2, 3]), new Set([1, 2, 3]));   // true
+// Map and Set are compared by reference only, never by content
+isEqual(new Map([['a', 1]]), new Map([['a', 1]])); // false (different instances)
+isEqual(new Set([1, 2, 3]), new Set([1, 2, 3]));   // false (different instances)
+const sharedMap = new Map([['a', 1]]);
+isEqual(sharedMap, sharedMap);                     // true (same instance)
 
 // Circular references
 const a: any = { name: 'root' };

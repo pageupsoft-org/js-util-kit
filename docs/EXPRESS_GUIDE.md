@@ -42,8 +42,8 @@ export function createAppLogger(config: LoggerConfig): Logger {
 
     sink = createHttpLogSink({
       url: `https://http-intake.logs.datadoghq.com/v1/input/${config.datadogApiKey}`,
-      headers: { 'DD-API-KEY': config.datadogApiKey },
       ...template,
+      headers: { ...template.headers, 'DD-API-KEY': config.datadogApiKey },
     });
   } else if (config.elkUrl) {
     // ELK/Elasticsearch sink
@@ -225,7 +225,7 @@ export function createErrorHandler(logger = getLogger()) {
 
     // Log error
     const logLevel = statusCode >= 500 ? 'error' : 'warn';
-    logger[logLevel](`Request failed: ${req.method} ${req.originalUrl}`, envelope);
+    logger[logLevel](`Request failed: ${req.method} ${req.originalUrl}`, { error: envelope });
 
     // Send response
     const response: ApiErrorResponse = {
@@ -541,7 +541,7 @@ export async function processEmailJob(job: EmailJob): Promise<void> {
     jobLogger.info('Email sent successfully', { context });
   } catch (error) {
     const envelope = normalizeError(error, { context: { ...context, operation: 'sendEmail' } });
-    jobLogger.error('Email job failed', envelope);
+    jobLogger.error('Email job failed', { error: envelope });
 
     // Re-throw for queue retry mechanism
     throw new AppError('Email delivery failed', { code: 'EMAIL_DELIVERY_FAILED', cause: error });
@@ -572,7 +572,7 @@ export class UserRepository {
       return await prisma.user.findUnique({ where: { id } });
     } catch (error) {
       const envelope = normalizeError(error, { context: { operation: 'findById', userId: id } });
-      logger.error('Database error', envelope);
+      logger.error('Database error', { error: envelope });
       throw new AppError('Database query failed', { code: 'DB_QUERY_FAILED', cause: error });
     }
   }
@@ -582,7 +582,7 @@ export class UserRepository {
       return await prisma.user.findUnique({ where: { email } });
     } catch (error) {
       const envelope = normalizeError(error, { context: { operation: 'findByEmail', email } });
-      logger.error('Database error', envelope);
+      logger.error('Database error', { error: envelope });
       throw new AppError('Database query failed', { code: 'DB_QUERY_FAILED', cause: error });
     }
   }
@@ -592,7 +592,7 @@ export class UserRepository {
       return await prisma.user.create({ data });
     } catch (error) {
       const envelope = normalizeError(error, { context: { operation: 'create', email: data.email } });
-      logger.error('Database error', envelope);
+      logger.error('Database error', { error: envelope });
       throw new AppError('Failed to create user', { code: 'DB_CREATE_FAILED', cause: error });
     }
   }
@@ -602,7 +602,7 @@ export class UserRepository {
       return await prisma.user.update({ where: { id }, data });
     } catch (error) {
       const envelope = normalizeError(error, { context: { operation: 'update', userId: id } });
-      logger.error('Database error', envelope);
+      logger.error('Database error', { error: envelope });
       throw new AppError('Failed to update user', { code: 'DB_UPDATE_FAILED', cause: error });
     }
   }
@@ -612,7 +612,7 @@ export class UserRepository {
       await prisma.user.delete({ where: { id } });
     } catch (error) {
       const envelope = normalizeError(error, { context: { operation: 'delete', userId: id } });
-      logger.error('Database error', envelope);
+      logger.error('Database error', { error: envelope });
       throw new AppError('Failed to delete user', { code: 'DB_DELETE_FAILED', cause: error });
     }
   }

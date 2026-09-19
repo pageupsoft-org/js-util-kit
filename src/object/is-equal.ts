@@ -34,6 +34,18 @@ function _isEqual(a: unknown, b: unknown, seen: WeakMap<object, WeakSet<object>>
         return a.getTime() === b.getTime();
     }
 
+    // Map/Set/RegExp have no own enumerable keys, so the generic object
+    // comparison below would silently treat any two instances as equal
+    // regardless of content. Since structural comparison isn't implemented
+    // for these types, only exact reference equality (checked above) counts.
+    if (
+        a instanceof Map || b instanceof Map ||
+        a instanceof Set || b instanceof Set ||
+        a instanceof RegExp || b instanceof RegExp
+    ) {
+        return false;
+    }
+
     const aIsArray = Array.isArray(a);
     const bIsArray = Array.isArray(b);
     if (aIsArray !== bIsArray) return false;
