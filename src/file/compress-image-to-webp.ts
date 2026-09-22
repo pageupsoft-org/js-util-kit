@@ -1,16 +1,26 @@
 import { formatFileSize } from './format-file-size.js';
 
-export type CompressImageResult = 
-  | { 
-      success: true; 
-      file: File;
-      originalSizeInBytes: number;
-      compressedSizeInBytes: number;
-      width: number;
-      height: number;
-      savingsPercentage: number;
-    }
-  | { success: false; error: string };
+export interface CompressImageResult { 
+  success: boolean; 
+  file: File;
+  originalSizeInBytes: number;
+  compressedSizeInBytes: number;
+  width: number;
+  height: number;
+  savingsPercentage: number;
+  error: string;
+}
+
+const createErrorResult = (error: string, file: File): CompressImageResult => ({
+  success: false,
+  file,
+  error,
+  originalSizeInBytes: 0,
+  compressedSizeInBytes: 0,
+  width: 0,
+  height: 0,
+  savingsPercentage: 0,
+});
 
 /**
  * Compresses an image file by converting it to WebP format using Canvas API.
@@ -32,13 +42,13 @@ export async function compressImageToWebp(
 
   // Early validation
   if (!file || !file.type?.startsWith('image/')) {
-    return { success: false, error: 'Invalid file type. Only images are supported.' };
+    return createErrorResult('Invalid file type. Only images are supported.', file);
   }
 
   return new Promise((resolve) => {
     // Ensure we are in a browser environment before using DOM APIs
     if (typeof window === 'undefined' || typeof document === 'undefined') {
-      resolve({ success: false, error: 'This function can only be used in a browser environment.' });
+      resolve(createErrorResult('This function can only be used in a browser environment.', file));
       return;
     }
 
@@ -54,7 +64,7 @@ export async function compressImageToWebp(
 
       const ctx = canvas.getContext('2d');
       if (!ctx) {
-        resolve({ success: false, error: 'Failed to get canvas context.' });
+        resolve(createErrorResult('Failed to get canvas context.', file));
         return;
       }
 
@@ -63,7 +73,7 @@ export async function compressImageToWebp(
       canvas.toBlob(
         (blob) => {
           if (!blob) {
-            resolve({ success: false, error: 'Failed to compress image.' });
+            resolve(createErrorResult('Failed to compress image.', file));
             return;
           }
 
@@ -84,6 +94,7 @@ export async function compressImageToWebp(
           resolve({ 
             success: true, 
             file: compressedFile,
+            error: "",
             originalSizeInBytes: originalSize,
             compressedSizeInBytes: compressedSize,
             width: canvas.width,
@@ -98,7 +109,7 @@ export async function compressImageToWebp(
 
     img.onerror = () => {
       URL.revokeObjectURL(url);
-      resolve({ success: false, error: `Failed to load image: ${file.name}` });
+      resolve(createErrorResult(`Failed to load image: ${file.name}`, file));
     };
 
     img.src = url;
