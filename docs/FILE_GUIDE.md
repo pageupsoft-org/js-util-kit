@@ -14,6 +14,7 @@ The file module provides utilities for working with files and file metadata. Som
 | `formatFileSize` | Universal | Format bytes as human-readable string |
 | `downloadFile` | Browser Only | Download file from URL |
 | `convertFileToBase64` | Browser Only | Convert File/Blob to base64 string |
+| `compressImageToWebp` | Browser Only | Compress and convert image to WebP format |
 
 ---
 
@@ -25,6 +26,7 @@ The file module provides utilities for working with files and file metadata. Som
 | `formatFileSize` | Yes | Yes |
 | `downloadFile` | Yes | No |
 | `convertFileToBase64` | Yes | No |
+| `compressImageToWebp` | Yes | No |
 
 ---
 
@@ -158,6 +160,43 @@ async function uploadImage(file: File): Promise<void> {
 
 ---
 
+### `compressImageToWebp`
+
+```typescript
+compressImageToWebp(file: File, quality?: number): Promise<CompressImageResult>
+```
+
+**What:** Compresses an image file by converting it to WebP format using the browser's Canvas API. It safely returns a flat object containing success status, the file (compressed or original on failure), and size statistics.
+
+**When:** Optimizing image uploads to save bandwidth and storage space.
+
+**Why:** Reduces image size significantly before uploading, ensuring fast network transfers while gracefully falling back if the file is invalid.
+
+**Example:**
+```typescript
+import { compressImageToWebp } from 'js-util-kit';
+
+async function handleUpload(file: File) {
+  // Compress image with 0.8 quality
+  const result = await compressImageToWebp(file, 0.8);
+
+  if (!result.success) {
+    console.error('Compression failed:', result.error);
+    // You can still use the original file if compression fails!
+    // await uploadToServer(result.file);
+    return;
+  }
+
+  console.log(`Saved ${result.savingsPercentage}%!`);
+  console.log(`Original: ${result.originalSizeInBytes} bytes`);
+  console.log(`Compressed: ${result.compressedSizeInBytes} bytes`);
+
+  await uploadToServer(result.file);
+}
+```
+
+---
+
 ## Common Patterns
 
 ### File Upload Validation
@@ -203,3 +242,4 @@ function renderUploadProgress(bytesLoaded: number, bytesTotal: number): string {
 | `formatFileSize` | Yes | Yes | None |
 | `downloadFile` | Yes | No | fetch API |
 | `convertFileToBase64` | Yes | No | FileReader API |
+| `compressImageToWebp` | Yes | No | Canvas API, URL API |
